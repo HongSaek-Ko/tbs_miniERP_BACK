@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: tbs_miniERP_BACK
