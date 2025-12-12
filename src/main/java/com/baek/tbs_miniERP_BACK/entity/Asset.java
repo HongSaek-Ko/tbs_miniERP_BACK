@@ -15,15 +15,8 @@ import java.time.LocalDateTime;
 public class Asset {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "asset_seq_gen")
-    @SequenceGenerator(
-            name = "asset_seq_gen",
-            sequenceName = "ASSET_SEQ",
-            allocationSize = 1
-    )
-    @Column(name = "ASSET_ID")
-    private Long assetId;
+    @Column(name = "ASSET_ID", length = 10)
+    private String assetId;
 
     @Column(name = "ASSET_TYPE", length = 10)
     private String assetType;
