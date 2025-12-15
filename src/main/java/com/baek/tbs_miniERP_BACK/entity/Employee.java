@@ -2,6 +2,7 @@ package com.baek.tbs_miniERP_BACK.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,15 +17,15 @@ import java.util.List;
 @AllArgsConstructor
 public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "employee_seq_gen")
-    @SequenceGenerator(
-            name = "employee_seq_gen",
-            sequenceName = "EMPLOYEE_SEQ",
-            allocationSize = 1
-    )
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+//            generator = "employee_seq_gen")
+//    @SequenceGenerator(
+//            name = "employee_seq_gen",
+//            sequenceName = "EMPLOYEE_SEQ",
+//            allocationSize = 1
+//    )
     @Column(name = "EMP_ID")
-    private Long empId;
+    private String empId;
 
     @Column(name = "EMP_NAME", length = 50, nullable = false)
     private String empName;
@@ -34,6 +35,7 @@ public class Employee {
 
     // EMPLOYEE, LEAVE, RESIGN
     @Column(name = "EMP_STATUS", length = 10, nullable = false)
+    @ColumnDefault("'EMPLOYEE'")
     private String empStatus;
 
     @Column(name = "EMP_REG_DT", nullable = false)
