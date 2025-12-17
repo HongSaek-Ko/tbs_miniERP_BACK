@@ -54,4 +54,12 @@ public interface AssetRepository extends JpaRepository<Asset, String>, JpaSpecif
             @Param("empPos") String empPos,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT MAX(a.assetId)
+        FROM Asset a
+        WHERE a.assetType LIKE CONCAT(:assetType, '%')
+        """
+    )
+    String findMaxAssetIdByAssetType(@Param("assetType") String assetType);
 }

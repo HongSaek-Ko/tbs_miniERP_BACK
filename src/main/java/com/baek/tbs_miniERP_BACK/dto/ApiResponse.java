@@ -2,6 +2,8 @@ package com.baek.tbs_miniERP_BACK.dto;
 
 
 import com.baek.tbs_miniERP_BACK.util.ErrorCode;
+import lombok.Getter;
+import org.springframework.web.bind.annotation.GetMapping;
 
 public class ApiResponse<T> {
     private final boolean success;

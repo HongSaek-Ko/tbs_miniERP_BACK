@@ -1,11 +1,9 @@
 package com.baek.tbs_miniERP_BACK.controller;
 
-import com.baek.tbs_miniERP_BACK.dto.ApiResponse;
-import com.baek.tbs_miniERP_BACK.dto.AssetDisposeDTO;
-import com.baek.tbs_miniERP_BACK.dto.AssetFilterParams;
-import com.baek.tbs_miniERP_BACK.dto.AssetListDTO;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.service.AssetService;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -80,4 +79,18 @@ public class AssetController {
         return ApiResponse.success("disposed");
     }
 
+    @GetMapping("/nextId")
+    public ApiResponse<String> nextAssetId(String assetType) {
+        String maxId = assetService.getMaxAssetId(assetType);
+        String typeCode = maxId.substring(0,1);
+        int nextId = Integer.parseInt(maxId.replaceAll("[^0-9]", ""))+1;
+        DecimalFormat df = new DecimalFormat("000");
+        return ApiResponse.success(typeCode+df.format(nextId));
+    }
+
+    @PostMapping
+    public ApiResponse<?> create(@Valid @RequestBody AssetCreateDTO req) {
+        assetService.createAsset(req);
+        return ApiResponse.success("등록 성공");
+    }
 }

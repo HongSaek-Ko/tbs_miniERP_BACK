@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class EmpService {
                 .empId(emp.getEmpId())
                 .empName(emp.getEmpName())
                 .empPos(emp.getEmpPos())
-                .empStatus(emp.getEmpStatus())
+                .empStatus(Objects.equals(emp.getEmpStatus(), "EMPLOYEE") ? "재직" : Objects.equals(emp.getEmpStatus(), "RETIREMENT") ? "퇴직" : Objects.equals(emp.getEmpStatus(), "ONLEAVE") ? "휴직" : "기타")
                 .teamName(emp.getTeam().getTeamName()).build()
         ).toList();
     }
