@@ -1,9 +1,6 @@
 package com.baek.tbs_miniERP_BACK.service;
 
-import com.baek.tbs_miniERP_BACK.dto.AssetCreateDTO;
-import com.baek.tbs_miniERP_BACK.dto.AssetDisposeDTO;
-import com.baek.tbs_miniERP_BACK.dto.AssetFilterParams;
-import com.baek.tbs_miniERP_BACK.dto.AssetListDTO;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.entity.Asset;
 import com.baek.tbs_miniERP_BACK.entity.Employee;
 import com.baek.tbs_miniERP_BACK.entity.Team;
@@ -24,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +31,7 @@ public class AssetService {
     private final AssetRepository assetRepository;
     private final EmpRepository empRepository;
 
+    // 자산 목록 조회
     public Page<AssetListDTO> getAssetList(AssetFilterParams params, Pageable pageable) {
         Specification<Asset> spec = AssetSpecifications.byFilters(params);
 
@@ -40,6 +39,7 @@ public class AssetService {
                 .map(this::toDto);
     }
 
+    // 자산 목록 조회 (엑셀 내보내기용)
     public List<AssetListDTO> getAssetListForExport(AssetFilterParams params) {
         Specification<Asset> spec = AssetSpecifications.byFilters(params);
 
@@ -48,6 +48,7 @@ public class AssetService {
                 .toList();
     }
 
+    // 자산 목록 (Entity) -> (DTO) 변환
     private AssetListDTO toDto(Asset a) {
         Employee e = a.getEmployee();
         Team t = (e != null ? e.getTeam() : null);
@@ -138,4 +139,27 @@ public class AssetService {
 //        throw new IllegalStateException("품번 생성에 실패했습니다. 잠시 후 다시 시도하세요.");
     }
 
+    @Transactional
+    public void updateAssets(List<AssetUpdateDTO> dtos) {
+
+        for (AssetUpdateDTO dto : dtos) {
+            Asset asset = assetRepository.findById(dto.getAssetId())
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("존재하지 않는 자산입니다: " + dto.getAssetId())
+                    );
+
+            // Asset에서, Employee의 속성이 Employee 타입으로 선언되어 있으므로 setEmp <- emp를 넣어줘야 함
+            Employee emp = empRepository.findByEmpIdForUpdate(dto.getEmpId());
+
+            asset.setAssetManufacturer(dto.getAssetManufacturer());
+            asset.setAssetManufacturedAt(dto.getAssetManufacturedAt());
+            asset.setAssetModelName(dto.getAssetModelName());
+//            asset.getEmployee().setEmpId(dto.getEmpId()); // 이거는 해당 Employee의 EmpId(= PK)를 바꾸는 것이므로 불가능.
+            asset.setEmployee(emp); // 상술한 방법.
+            asset.setAssetSn(dto.getAssetSn());
+            asset.setAssetLoc(dto.getAssetLoc());
+            asset.setAssetIssuanceDate(dto.getAssetIssuanceDate());
+            asset.setAssetDesc(dto.getAssetDesc());
+        }
+    }
 }

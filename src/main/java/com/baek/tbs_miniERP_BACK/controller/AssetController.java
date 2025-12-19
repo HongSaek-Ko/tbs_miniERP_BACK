@@ -5,6 +5,7 @@ import com.baek.tbs_miniERP_BACK.service.AssetService;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequestMapping("/api/assets")
 @RequiredArgsConstructor
 @Slf4j
+@ToString
 public class AssetController {
     private final AssetService assetService;
 
@@ -40,7 +42,6 @@ public class AssetController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportAssets(@ModelAttribute AssetFilterParams params)
             throws UnsupportedEncodingException {
-
         List<AssetListDTO> list = assetService.getAssetListForExport(params);
 
         byte[] bytes = ExcelExporter.export(list);
@@ -92,5 +93,11 @@ public class AssetController {
     public ApiResponse<?> create(@Valid @RequestBody AssetCreateDTO req) {
         assetService.createAsset(req);
         return ApiResponse.success("등록 성공");
+    }
+
+    @PatchMapping("/bulkUpdate")
+    public ApiResponse<?> assetUpdate(@RequestBody List<AssetUpdateDTO> dto) {
+        assetService.updateAssets(dto);
+        return ApiResponse.success("수정 성공");
     }
 }

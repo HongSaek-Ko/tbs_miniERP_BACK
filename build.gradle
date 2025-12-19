@@ -33,6 +33,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml/5.2.3
     implementation 'org.apache.poi:poi:5.4.1'
     implementation 'org.apache.poi:poi-ooxml:5.4.1'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7.1'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
