@@ -2,12 +2,12 @@ package com.baek.tbs_miniERP_BACK.controller;
 
 import com.baek.tbs_miniERP_BACK.dto.ApiResponse;
 import com.baek.tbs_miniERP_BACK.dto.EmpDTO;
+import com.baek.tbs_miniERP_BACK.dto.EmpResignDTO;
+import com.baek.tbs_miniERP_BACK.dto.EmpUpdateDTO;
 import com.baek.tbs_miniERP_BACK.service.EmpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,5 +21,32 @@ public class EmpController {
     @GetMapping
     public ApiResponse<List<EmpDTO>> findAllEmp() {
         return ApiResponse.success(empService.findAllEmp());
+    }
+
+    @PatchMapping("/bulkUpdate")
+    public ApiResponse<?> empUpdate(@RequestBody List<EmpUpdateDTO> dtos) {
+        empService.updateEmps(dtos);
+        return ApiResponse.success("수정 성공");
+    }
+
+    @PatchMapping("/resign")
+    public ApiResponse<?> empResign(@RequestBody List<EmpResignDTO> dtos) {
+        if(dtos == null || dtos.isEmpty()) {
+            return ApiResponse.fail("400", "퇴사처리 대상이 없습니다.");
+        }
+
+        for(EmpResignDTO dto : dtos) {
+            if(dto.getEmpId() == null || dto.getEmpId().isEmpty()) {
+                return ApiResponse.fail("400", "사번이 누락되었습니다.");
+            }
+            if (dto.getEmpStatus() == null || dto.getEmpStatus().isEmpty()) {
+                return ApiResponse.fail("400", "직원 상태를 입력하세요.");
+            }
+            if (!dto.getEmpStatus().contains("퇴사")) {
+                return ApiResponse.fail("400", "'퇴사' 문구가 포함되어야 합니다.");
+            }
+        }
+        empService.resignEmps(dtos);
+        return ApiResponse.success("퇴사처리 완료");
     }
 }

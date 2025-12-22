@@ -61,7 +61,7 @@ public class AssetController {
     public ApiResponse<?> disposeAssets(@RequestBody List<AssetDisposeDTO> reqs) {
 
         if (reqs == null || reqs.isEmpty()) {
-            return ApiResponse.fail("400", "폐지할 자산이 없습니다.");
+            return ApiResponse.fail("400", "폐기할 자산이 없습니다.");
         }
 
         for (AssetDisposeDTO r : reqs) {
@@ -71,13 +71,13 @@ public class AssetController {
             if (r.getAssetDesc() == null || r.getAssetDesc().trim().isEmpty()) {
                 return ApiResponse.fail("400", "비고란을 입력하세요.");
             }
-            if (!r.getAssetDesc().contains("폐지")) {
-                return ApiResponse.fail("400", "비고란에 '폐지' 문구가 포함되어야 합니다.");
+            if (!r.getAssetDesc().contains("폐기")) {
+                return ApiResponse.fail("400", "비고란에 '폐기' 문구가 포함되어야 합니다.");
             }
         }
 
         assetService.disposeAssets(reqs);
-        return ApiResponse.success("disposed");
+        return ApiResponse.success("자산 폐기 완료");
     }
 
     @GetMapping("/nextId")

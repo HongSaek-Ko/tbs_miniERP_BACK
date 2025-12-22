@@ -79,7 +79,7 @@ public class AssetService {
 
             // 이미 폐지된 자산 방어
             if ("N".equals(asset.getAssetStatus())) {
-                throw new IllegalStateException("이미 폐지된 자산입니다: " + dto.getAssetId());
+                throw new IllegalStateException("이미 폐기된 자산입니다: " + dto.getAssetId());
             }
 
             asset.setAssetStatus("N");
