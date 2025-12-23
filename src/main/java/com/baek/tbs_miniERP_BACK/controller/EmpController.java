@@ -1,14 +1,19 @@
 package com.baek.tbs_miniERP_BACK.controller;
 
-import com.baek.tbs_miniERP_BACK.dto.ApiResponse;
-import com.baek.tbs_miniERP_BACK.dto.EmpDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpResignDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpUpdateDTO;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.service.EmpService;
+import com.baek.tbs_miniERP_BACK.util.EmpExcelExporter;
+import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -21,6 +26,22 @@ public class EmpController {
     @GetMapping
     public ApiResponse<List<EmpDTO>> findAllEmp() {
         return ApiResponse.success(empService.findAllEmp());
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportEmp(@ModelAttribute EmpFilterParams params) throws UnsupportedEncodingException {
+        List<EmpDTO> dtos = empService.findAllEmp();
+        // TODO: null -> dtos
+        byte[] bytes = EmpExcelExporter.export(dtos);
+        String filename = "직원_목록_" + LocalDate.now() + ".xlsx";
+        String encoded = URLEncoder.encode(filename, "UTF-8");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encoded + "\"")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .body(bytes);
     }
 
     @PatchMapping("/bulkUpdate")
