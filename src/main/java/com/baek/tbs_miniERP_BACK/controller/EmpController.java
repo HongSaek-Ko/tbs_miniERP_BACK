@@ -23,14 +23,16 @@ import java.util.List;
 public class EmpController {
     private final EmpService empService;
 
+    // 직원 전체 목록
     @GetMapping
     public ApiResponse<List<EmpDTO>> findAllEmp() {
         return ApiResponse.success(empService.findAllEmp());
     }
 
+    // 엑셀 추출
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportEmp(@ModelAttribute EmpFilterParams params) throws UnsupportedEncodingException {
-        List<EmpDTO> dtos = empService.findAllEmp();
+        List<EmpDTO> dtos = empService.getEmpListForExport(params);
         // TODO: null -> dtos
         byte[] bytes = EmpExcelExporter.export(dtos);
         String filename = "직원_목록_" + LocalDate.now() + ".xlsx";
@@ -44,12 +46,14 @@ public class EmpController {
                 .body(bytes);
     }
 
+    // 직원 정보 수정
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> empUpdate(@RequestBody List<EmpUpdateDTO> dtos) {
         empService.updateEmps(dtos);
         return ApiResponse.success("수정 성공");
     }
 
+    // 직원 정보 수정 - 퇴직처리
     @PatchMapping("/resign")
     public ApiResponse<?> empResign(@RequestBody List<EmpResignDTO> dtos) {
         if(dtos == null || dtos.isEmpty()) {

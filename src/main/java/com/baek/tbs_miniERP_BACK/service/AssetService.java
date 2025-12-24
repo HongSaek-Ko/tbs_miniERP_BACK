@@ -93,18 +93,26 @@ public class AssetService {
     }
 
     @Transactional
-    public void createAsset(AssetCreateDTO req) {
+    public void createAsset(List<AssetCreateDTO> req) {
         log.info("AssetCreateDTO: {}",req.toString());
-        // 직원 찾기
-        Employee emp = empRepository.findById(req.getEmpId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사번입니다."));
+        for(AssetCreateDTO dto : req) {
+            // 직원 찾기
+            Employee emp = empRepository.findById(dto.getEmpId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사번입니다."));
+    
+            // 날짜 파싱
+            LocalDate issuanceDate =
+                    LocalDate.parse(dto.getAssetIssuanceDate());
+    
+            LocalDateTime issuance =
+                    issuanceDate.atStartOfDay(); // 2025-12-14T00:00:00
 
-        // 날짜 파싱
-        LocalDate issuanceDate =
-                LocalDate.parse(req.getAssetIssuanceDate());
+            // getAsset 메서드 돌려서 그대로 save(등록)
+            Asset a = getAsset(dto, emp);
 
-        LocalDateTime issuance =
-                issuanceDate.atStartOfDay(); // 2025-12-14T00:00:00
+            assetRepository.save(a);
+
+        }
 
 
         // assetId 생성(동시성 방어: 중복이면 재시도)
@@ -119,24 +127,26 @@ public class AssetService {
 //                continue;
 //            }
 
-            Asset a = new Asset();
-            log.info("assetId? {}",req.getAssetId());
-            a.setAssetId(req.getAssetId());
-            a.setAssetType(req.getAssetType());
-            a.setAssetManufacturer(req.getAssetManufacturer());
-            a.setAssetManufacturedAt(LocalDate.parse(req.getAssetManufacturedAt()).atStartOfDay());
-            a.setAssetModelName(req.getAssetModelName());
-            a.setAssetSn(req.getAssetSn());
-            a.setAssetLoc(req.getAssetLoc());
-            a.setAssetIssuanceDate(LocalDate.parse(req.getAssetIssuanceDate()).atStartOfDay());
-            a.setAssetDesc(req.getAssetDesc());
-
-            a.setAssetStatus("Y"); // 현재 자산
-            a.setEmployee(emp);
-
-            assetRepository.save(a);
 //        }
 //        throw new IllegalStateException("품번 생성에 실패했습니다. 잠시 후 다시 시도하세요.");
+    }
+
+    // 등록용 메서드
+    private static Asset getAsset(AssetCreateDTO dto, Employee emp) {
+        Asset a = new Asset();
+        a.setAssetId(dto.getAssetId());
+        a.setAssetType(dto.getAssetType());
+        a.setAssetManufacturer(dto.getAssetManufacturer());
+        a.setAssetManufacturedAt(LocalDate.parse(dto.getAssetManufacturedAt()).atStartOfDay());
+        a.setAssetModelName(dto.getAssetModelName());
+        a.setAssetSn(dto.getAssetSn());
+        a.setAssetLoc(dto.getAssetLoc());
+        a.setAssetIssuanceDate(LocalDate.parse(dto.getAssetIssuanceDate()).atStartOfDay());
+        a.setAssetDesc(dto.getAssetDesc());
+
+        a.setAssetStatus("EMPLOYEE"); // 현재 자산
+        a.setEmployee(emp);
+        return a;
     }
 
     @Transactional

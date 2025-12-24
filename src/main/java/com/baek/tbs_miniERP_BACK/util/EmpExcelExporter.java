@@ -21,7 +21,7 @@ public class EmpExcelExporter {
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
-                Sheet sheet = workbook.createSheet("직원목록");
+            Sheet sheet = workbook.createSheet("직원목록");
 
             // 헤더
             Row headerRow= sheet.createRow(0);
@@ -30,7 +30,7 @@ public class EmpExcelExporter {
             headerFont.setBold(true);
             headerStyle.setFont(headerFont);
 
-            for (int i=0; i < HEADERS.length; i++) {
+            for (int i = 0; i < HEADERS.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(HEADERS[i]);
                 cell.setCellStyle(headerStyle);
@@ -40,18 +40,27 @@ public class EmpExcelExporter {
             int rowIdx = 1;
             for (EmpDTO emp : emps) {
                 Row row = sheet.createRow(rowIdx++);
+
                 int col=0;
 
                 row.createCell(col++).setCellValue(nvl(String.valueOf(emp.getEmpId())));
                 row.createCell(col++).setCellValue(nvl(emp.getEmpName()));
                 row.createCell(col++).setCellValue(nvl(emp.getEmpPos()));
                 row.createCell(col++).setCellValue(nvl(emp.getTeamName()));
-                row.createCell(col).setCellValue(nvl(emp.getEmpStatus()));
+                String est = nvl(emp.getEmpStatus()).toLowerCase();
+                if(est.contains("emp") || est.contains("재직")) {
+                    est = "재직";
+                } else if (est.contains("resign") || est.contains("retire") || est.contains("퇴직")) {
+                    est = "퇴직";
+                } else {
+                    est = "휴직/기타";
+                }
+                row.createCell(col).setCellValue(est);
             }
 
             workbook.write(bos);
 
-            // 컬럼 폭 자동 조정(데이터까지 포함해서 하고 싶으면 여기서 다시 autoSizeColumn 돌려도 됨)
+            // 컬럼 폭 자동 조정
             return bos.toByteArray();
 
         }catch (IOException e) {

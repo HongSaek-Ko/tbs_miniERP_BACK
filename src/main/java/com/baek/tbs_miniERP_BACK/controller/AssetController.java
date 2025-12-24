@@ -29,6 +29,7 @@ import java.util.List;
 public class AssetController {
     private final AssetService assetService;
 
+    // 자산 목록 조회 (페이징 포함)
     @GetMapping
     public ApiResponse<Page<AssetListDTO>> getAssetList(
             @ModelAttribute AssetFilterParams params,
@@ -39,6 +40,7 @@ public class AssetController {
         return ApiResponse.success(assetService.getAssetList(params, pageable));
     }
 
+    // 엑셀 내보내기(자산)
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportAssets(@ModelAttribute AssetFilterParams params)
             throws UnsupportedEncodingException {
@@ -57,6 +59,7 @@ public class AssetController {
                 .body(bytes);
     }
 
+    // 자산 폐지
     @PatchMapping("/dispose")
     public ApiResponse<?> disposeAssets(@RequestBody List<AssetDisposeDTO> reqs) {
 
@@ -80,6 +83,7 @@ public class AssetController {
         return ApiResponse.success("자산 폐기 완료");
     }
 
+    // 자산 다음 번호 조회 (등록 폼용)
     @GetMapping("/nextId")
     public ApiResponse<String> nextAssetId(String assetType) {
         String maxId = assetService.getMaxAssetId(assetType);
@@ -89,12 +93,14 @@ public class AssetController {
         return ApiResponse.success(typeCode+df.format(nextId));
     }
 
+    // 신규 자산 등록 (다중)
     @PostMapping
-    public ApiResponse<?> create(@Valid @RequestBody AssetCreateDTO req) {
+    public ApiResponse<?> create(@Valid @RequestBody List<AssetCreateDTO> req) {
         assetService.createAsset(req);
         return ApiResponse.success("등록 성공");
     }
 
+    // 자산 정보 수정 (다중)
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> assetUpdate(@RequestBody List<AssetUpdateDTO> dto) {
         assetService.updateAssets(dto);
