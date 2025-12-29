@@ -25,8 +25,8 @@ public class EmpController {
 
     // 직원 전체 목록
     @GetMapping
-    public ApiResponse<List<EmpDTO>> findAllEmp() {
-        return ApiResponse.success(empService.findAllEmp());
+    public ApiResponse<List<EmpDTO>> findAll() {
+        return ApiResponse.success(empService.findAll());
     }
 
     // 엑셀 추출

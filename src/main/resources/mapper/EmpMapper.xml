@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baek.tbs_miniERP_BACK.mapper.EmpMapper">
+<!--    테스트용 -->
+<!--    !! 별칭 지정하여 반드시 DTO의 필드명과 매칭시켜야 함 !! -->
+<!--    <select id="findAll" resultType="com.baek.tbs_miniERP_BACK.dto.EmpDTOM">-->
+<!--        SELECT-->
+<!--            EMP_ID      AS empId,-->
+<!--            EMP_NAME    AS empName,-->
+<!--            EMP_POS     AS empPos,-->
+<!--            EMP_STATUS  AS empStatus,-->
+<!--            EMP_REG_DT  AS empRegDt,-->
+<!--            TEAM_ID     AS teamId-->
+<!--        FROM EMPLOYEE-->
+<!--        ORDER BY EMP_ID-->
+<!--    </select>-->
+
+    <select id="findAll" resultType="com.baek.tbs_miniERP_BACK.dto.EmpDTO">
+        SELECT
+            e.EMP_ID   AS empId,
+            e.EMP_NAME AS empName,
+            e.EMP_POS  AS empPos,
+            CASE e.EMP_STATUS
+                WHEN 'EMPLOYEE' THEN '재직'
+                WHEN 'RESIGN'   THEN '퇴직'
+                WHEN 'ONLEAVE'  THEN '휴직'
+                ELSE '기타'
+            END AS empStatus,
+            t.TEAM_NAME AS teamName
+        FROM EMPLOYEE e
+        LEFT JOIN TEAM t
+        ON t.TEAM_ID = e.TEAM_ID
+        ORDER BY e.EMP_ID
+    </select>
+
+<!--    TODO: JPA 딸깍이던 거 바꿔야함(teamName으로 teamId 조회 -> teamId 던지기...를 직접 구현 -->
+    <update id="updateEmps" parameterType="java.util.List">
+        <foreach collection="com.baek.tbs_miniERP_BACK.dto.EmpUpdateDTO" item="emp" separator=";">
+            UPDATE employee
+            SET (emp_name, emp_pos, emp_team_id, emp_status)
+            = (#{emp.empName}, #{emp.empPos}, #{emp.empTeamId}, #{empStatus})
+            WHERE 1=1
+                AND emp_id = #{emp.empId}
+        </foreach>
+    </update>
+
+    <update id="resignEmps" parameterType="java.util.List">
+        <foreach collection="com.baek.tbs_miniERP_BACK.dto.EmpResignDTO" item="item" separator=";">
+            UPDATE employee
+            SET emp_status = #{item.empStatus}
+            WHERE 1=1
+                AND emp_id = #{item.empId}
+        </foreach>
+    </update>
+</mapper>

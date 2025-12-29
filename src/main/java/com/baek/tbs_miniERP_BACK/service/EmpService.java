@@ -1,10 +1,8 @@
 package com.baek.tbs_miniERP_BACK.service;
 
-import com.baek.tbs_miniERP_BACK.dto.EmpDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpFilterParams;
-import com.baek.tbs_miniERP_BACK.dto.EmpResignDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpUpdateDTO;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.entity.Employee;
+import com.baek.tbs_miniERP_BACK.mapper.EmpMapper;
 import com.baek.tbs_miniERP_BACK.repository.EmpRepository;
 import com.baek.tbs_miniERP_BACK.repository.TeamRepository;
 import com.baek.tbs_miniERP_BACK.util.EmpSpecifications;
@@ -23,16 +21,22 @@ import java.util.Objects;
 public class EmpService {
     private final EmpRepository empRepository;
     private final TeamRepository teamRepository;
+    private final EmpMapper empMapper;
 
-    public List<EmpDTO> findAllEmp() {
-        return empRepository.findAll().stream().map(emp -> EmpDTO.builder()
-                .empId(emp.getEmpId())
-                .empName(emp.getEmpName())
-                .empPos(emp.getEmpPos())
-                .empStatus(Objects.equals(emp.getEmpStatus(), "EMPLOYEE") ? "재직" : Objects.equals(emp.getEmpStatus(), "RESIGN") ? "퇴직" : Objects.equals(emp.getEmpStatus(), "ONLEAVE") ? "휴직" : "기타")
-                .teamName(emp.getTeam().getTeamName()).build()
-        ).toList();
+    public List<EmpDTO> findAll() {
+        return empMapper.findAll();
     }
+
+    // JPA 버전
+//    public List<EmpDTO> findAllEmp() {
+//        return empRepository.findAll().stream().map(emp -> EmpDTO.builder()
+//                .empId(emp.getEmpId())
+//                .empName(emp.getEmpName())
+//                .empPos(emp.getEmpPos())
+//                .empStatus(Objects.equals(emp.getEmpStatus(), "EMPLOYEE") ? "재직" : Objects.equals(emp.getEmpStatus(), "RESIGN") ? "퇴직" : Objects.equals(emp.getEmpStatus(), "ONLEAVE") ? "휴직" : "기타")
+//                .teamName(emp.getTeam().getTeamName()).build()
+//        ).toList();
+//    }
 
     // 엑셀 내보내기용 직원 목록 조회(필터 반영)
     public List<EmpDTO> getEmpListForExport(EmpFilterParams params) {
@@ -69,15 +73,20 @@ public class EmpService {
     }
 
     // 직원 퇴사처리
-    @Transactional
+//    @Transactional
+//    public void resignEmps(List<EmpResignDTO> dtos) {
+//        for(EmpResignDTO dto : dtos) {
+//            Employee emp = empRepository.findById(dto.getEmpId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사원입니다." + dto.getEmpId()));
+//            if(emp.getEmpStatus().contains("퇴사") || emp.getEmpStatus().toLowerCase().contains("resign") || emp.getEmpStatus().toLowerCase().contains("retire")) {
+//                throw new IllegalStateException("이미 퇴사한 사원입니다."+dto.getEmpId());
+//            }
+//
+//            emp.setEmpStatus("RESIGN");
+//        }
+//    }
+    // 직원 퇴사처리
     public void resignEmps(List<EmpResignDTO> dtos) {
-        for(EmpResignDTO dto : dtos) {
-            Employee emp = empRepository.findById(dto.getEmpId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사원입니다." + dto.getEmpId()));
-            if(emp.getEmpStatus().contains("퇴사") || emp.getEmpStatus().toLowerCase().contains("resign") || emp.getEmpStatus().toLowerCase().contains("retire")) {
-                throw new IllegalStateException("이미 퇴사한 사원입니다."+dto.getEmpId());
-            }
-
-            emp.setEmpStatus("RESIGN");
-        }
+        log.info(dtos.toString());
+        empMapper.resignEmps(dtos);
     }
 }
