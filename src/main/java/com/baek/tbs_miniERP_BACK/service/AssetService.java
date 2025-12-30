@@ -4,9 +4,11 @@ import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.entity.Asset;
 import com.baek.tbs_miniERP_BACK.entity.Employee;
 import com.baek.tbs_miniERP_BACK.entity.Team;
+import com.baek.tbs_miniERP_BACK.mapper.AssetMapper;
 import com.baek.tbs_miniERP_BACK.repository.AssetRepository;
 import com.baek.tbs_miniERP_BACK.repository.EmpRepository;
 import com.baek.tbs_miniERP_BACK.util.AssetSpecifications;
+import com.baek.tbs_miniERP_BACK.util.SearchTokens;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +32,9 @@ import java.util.stream.Collectors;
 public class AssetService {
     private final AssetRepository assetRepository;
     private final EmpRepository empRepository;
+    private final AssetMapper assetMapper;
 
-    // 자산 목록 조회
+    // 자산 목록 조회 (JPA)
     public Page<AssetListDTO> getAssetList(AssetFilterParams params, Pageable pageable) {
         Specification<Asset> spec = AssetSpecifications.byFilters(params);
 
@@ -39,13 +42,24 @@ public class AssetService {
                 .map(this::toDto);
     }
 
-    // 자산 목록 조회 (엑셀 내보내기용)
+    // 자산 목록 조회 (Mybatis)
+    public List<AssetListDTO> findAll(String assetStatus) {
+        return assetMapper.findAll(assetStatus);
+    }
+
+    // 자산 목록 조회; 엑셀 내보내기 (JPA)
     public List<AssetListDTO> getAssetListForExport(AssetFilterParams params) {
         Specification<Asset> spec = AssetSpecifications.byFilters(params);
 
         return assetRepository.findAll(spec).stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    // 자산 목록 조회; 엑셀 내보내기 (Mybatis)
+    public List<AssetListDTO> findAllForExport(AssetFilterParams p) {
+        SearchTokens t = SearchTokens.parse(p.getGlobalSearch());
+        return assetMapper.findAllForExport(p, t);
     }
 
     // 자산 목록 (Entity) -> (DTO) 변환
@@ -68,53 +82,56 @@ public class AssetService {
                 a.getAssetDesc()
         );
     }
+
+    // 자산 폐기
     @Transactional
     public void disposeAssets(List<AssetDisposeDTO> reqs) {
-
-        for (AssetDisposeDTO dto : reqs) {
-            Asset asset = assetRepository.findById(dto.getAssetId())
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("존재하지 않는 자산입니다: " + dto.getAssetId())
-                    );
-
-            // 이미 폐지된 자산 방어
-            if ("N".equals(asset.getAssetStatus())) {
-                throw new IllegalStateException("이미 폐기된 자산입니다: " + dto.getAssetId());
-            }
-
-            asset.setAssetStatus("N");
-            asset.setAssetDesc(dto.getAssetDesc().trim());
-        }
+//        for (AssetDisposeDTO dto : reqs) {
+//            AssetListDTO asset = assetRepository.findById(dto.getAssetId())
+//                    .orElseThrow(() ->
+//                            new IllegalArgumentException("존재하지 않는 자산입니다: " + dto.getAssetId())
+//                    );
+//
+//            // 이미 폐지된 자산 방어
+//            if ("N".equals(asset.getAssetStatus())) {
+//                throw new IllegalStateException("이미 폐기된 자산입니다: " + dto.getAssetId());
+//            }
+//
+//            asset.setAssetStatus("N");
+//            asset.setAssetDesc(dto.getAssetDesc().trim());
+//        }
+        assetMapper.disposeAssets(reqs);
     }
 
-    // assetId 최대값 찾기
+    // assetId 최대값 찾기 (신규 자산 등록용)
     public String getMaxAssetId(String assetType) {
-        return assetRepository.findMaxAssetIdByAssetType(assetType);
+//        return assetRepository.findMaxAssetIdByAssetType(assetType);
+        return assetMapper.findMaxIdByAssetType(assetType);
     }
 
+    // 신규 자산 등록
     @Transactional
-    public void createAsset(List<AssetCreateDTO> req) {
+    public int createAsset(List<AssetCreateDTO> req) {
         log.info("AssetCreateDTO: {}",req.toString());
-        for(AssetCreateDTO dto : req) {
-            // 직원 찾기
-            Employee emp = empRepository.findById(dto.getEmpId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사번입니다."));
-    
-            // 날짜 파싱
-            LocalDate issuanceDate =
-                    LocalDate.parse(dto.getAssetIssuanceDate());
-    
-            LocalDateTime issuance =
-                    issuanceDate.atStartOfDay(); // 2025-12-14T00:00:00
-
-            // getAsset 메서드 돌려서 그대로 save(등록)
-            Asset a = getAsset(dto, emp);
-
-            assetRepository.save(a);
-
-        }
-
-
+//        for(AssetCreateDTO dto : req) {
+//            // 직원 찾기
+//            Employee emp = empRepository.findById(dto.getEmpId())
+//                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사번입니다."));
+//
+//            // 날짜 파싱
+//            LocalDate issuanceDate =
+//                    LocalDate.parse(dto.getAssetIssuanceDate());
+//
+//            LocalDateTime issuance =
+//                    issuanceDate.atStartOfDay(); // 2025-12-14T00:00:00
+//
+//            // getAsset 메서드 돌려서 그대로 save(등록)
+//            Asset a = getAsset(dto, emp);
+//
+//            assetRepository.save(a);
+//
+//        }
+        return assetMapper.createAssets(req);
         // assetId 생성(동시성 방어: 중복이면 재시도)
 //        String prefix = req.getAssetType();
 //        String assetId;
@@ -149,27 +166,28 @@ public class AssetService {
         return a;
     }
 
+    // 자산 정보 수정
     @Transactional
-    public void updateAssets(List<AssetUpdateDTO> dtos) {
-
-        for (AssetUpdateDTO dto : dtos) {
-            Asset asset = assetRepository.findById(dto.getAssetId())
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("존재하지 않는 자산입니다: " + dto.getAssetId())
-                    );
-
-            // Asset에서, Employee의 속성이 Employee 타입으로 선언되어 있으므로 setEmp <- emp를 넣어줘야 함
-            Employee emp = empRepository.findByEmpIdForUpdate(dto.getEmpId());
-
-            asset.setAssetManufacturer(dto.getAssetManufacturer());
-            asset.setAssetManufacturedAt(dto.getAssetManufacturedAt());
-            asset.setAssetModelName(dto.getAssetModelName());
-//            asset.getEmployee().setEmpId(dto.getEmpId()); // 이거는 해당 Employee의 EmpId(= PK)를 바꾸는 것이므로 불가능.
-            asset.setEmployee(emp); // 상술한 방법.
-            asset.setAssetSn(dto.getAssetSn());
-            asset.setAssetLoc(dto.getAssetLoc());
-            asset.setAssetIssuanceDate(dto.getAssetIssuanceDate());
-            asset.setAssetDesc(dto.getAssetDesc());
-        }
+    public void updateAssets(List<AssetUpdateDTO> dto) {
+//        for (AssetUpdateDTO dto : dtos) {
+//            Asset asset = assetRepository.findById(dto.getAssetId())
+//                    .orElseThrow(() ->
+//                            new IllegalArgumentException("존재하지 않는 자산입니다: " + dto.getAssetId())
+//                    );
+//
+//            // Asset에서, Employee의 속성이 Employee 타입으로 선언되어 있으므로 setEmp <- emp를 넣어줘야 함
+//            Employee emp = empRepository.findByEmpIdForUpdate(dto.getEmpId());
+//
+//            asset.setAssetManufacturer(dto.getAssetManufacturer());
+//            asset.setAssetManufacturedAt(dto.getAssetManufacturedAt());
+//            asset.setAssetModelName(dto.getAssetModelName());
+//            // asset.getEmployee().setEmpId(dto.getEmpId()); // 이거는 해당 Employee의 EmpId(= PK)를 바꾸는 것이므로 불가능.
+//            asset.setEmployee(emp); // 상술한 방법.
+//            asset.setAssetSn(dto.getAssetSn());
+//            asset.setAssetLoc(dto.getAssetLoc());
+//            asset.setAssetIssuanceDate(dto.getAssetIssuanceDate());
+//            asset.setAssetDesc(dto.getAssetDesc());
+//        }
+        assetMapper.updateAssets(dto);
     }
 }

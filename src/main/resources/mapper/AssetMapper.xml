@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.baek.tbs_miniERP_BACK.mapper.AssetMapper">
+
+    <!-- 자산 단일 조회 (유효성 검사 등) -->
+    <select id="findAssetByAssetId" parameterType="String" resultType="com.baek.tbs_miniERP_BACK.dto.AssetDTO">
+        SELECT
+            asset_id        AS assetId,
+            asset_status    AS assetStatus
+        FROM asset
+        WHERE asset_id = #{assetId}
+    </select>
+
+    <!-- 자산 다음 번호 조회 (등록용) -->
+    <select id="findMaxIdByAssetType" parameterType="String">
+        SELECT MAX(asset_id) FROM asset WHERE LOWER(asset_type) LIKE '%' || LOWER(#{assetType}) || '%'
+    </select>
+
+    <!-- 자산 전체 조회 (일반) -->
+    <select id="findAll" parameterType="String" resultType="com.baek.tbs_miniERP_BACK.dto.AssetListDTO">
+        SELECT
+           a.asset_id               AS assetId,
+           a.asset_type             AS assetType,
+           a.asset_manufacturer     AS assetManufacturer,
+           a.asset_model_name       AS assetModelName,
+           a.asset_sn               AS assetSn,
+           a.asset_manufactured_at  AS assetManufacturedAt,
+           e.emp_name               AS empName,
+           e.emp_pos                AS empPos,
+           t.team_name              AS teamName,
+           a.asset_loc              AS assetLoc,
+           a.asset_issuance_date    AS assetIssuanceDate,
+           a.asset_desc             AS assetDesc
+        FROM asset a
+        LEFT JOIN employee e
+        ON a.emp_id = e.emp_id
+        LEFT JOIN team t
+        ON t.team_id = e.team_id
+        WHERE a.asset_status = #{assetStatus}
+        ORDER BY a.asset_ID
+    </select>
+
+    <!-- 자산 전체 조회 (엑셀 내보내기) -->
+    <select id="findAllForExport" resultType="com.baek.tbs_miniERP_BACK.dto.AssetListDTO">
+        SELECT
+            a.asset_id               AS assetId,
+            a.asset_type             AS assetType,
+            a.asset_manufacturer     AS assetManufacturer,
+            a.asset_model_name       AS assetModelName,
+            a.asset_sn               AS assetSn,
+            a.asset_manufactured_at  AS assetManufacturedAt,
+            e.emp_name               AS empName,
+            e.emp_pos                AS empPos,
+            t.team_name              AS teamName,
+            a.asset_loc              AS assetLoc,
+            a.asset_issuance_date    AS assetIssuanceDate,
+            a.asset_desc             AS assetDesc
+        FROM asset a
+        LEFT JOIN employee e
+        ON a.emp_id = e.emp_id
+        LEFT JOIN team t
+        ON t.team_id = e.team_id
+        <where>
+            <if test="p.assetType != null and p.assetType.trim() != ''">
+                AND LOWER(a.asset_type) LIKE '%' || LOWER(#{p.assetType}) || '%'
+            </if>
+            <if test="p.empName != null and p.empName.trim() != ''">
+                AND LOWER(e.emp_name) LIKE '%' || LOWER(#{p.empName}) || '%'
+            </if>
+            <if test="p.empPos != null and p.empPos.trim() != ''">
+                AND LOWER(e.emp_pos) LIKE '%' || LOWER(#{p.empPos}) || '%'
+            </if>
+            <if test="p.teamName != null and p.teamName.trim() != ''">
+                AND LOWER(t.team_name) LIKE '%' || LOWER(#{p.teamName}) || '%'
+            </if>
+            <if test="p.assetLoc != null and p.assetLoc.trim() != ''">
+                AND LOWER(a.asset_loc) LIKE '%' || LOWER(#{p.assetLoc}) || '%'
+            </if>
+            <if test="p.assetDesc != null and p.assetDesc.trim() != ''">
+                AND LOWER(a.asset_desc) LIKE '%' || LOWER(#{p.assetDesc}) || '%'
+            </if>
+            <if test="p.assetStatus != null and p.assetStatus.trim() != ''">
+                AND LOWER(a.asset_status) LIKE '%' || LOWER(#{p.assetStatus}) || '%'
+            </if>
+            <!-- globalSearch: -토큰(제외) -->
+            <foreach collection="t.mustExclude" item="token">
+                AND NOT (
+                    LOWER(a.asset_type) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_pos) LIKE '%' || #{token} || '%'
+                    OR LOWER(t.team_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_loc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_desc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_status) LIKE '%' || #{token} || '%'
+                )
+            </foreach>
+
+            <!-- globalSearch: +토큰(필수) -->
+            <foreach collection="t.mustInclude" item="token">
+                AND (
+                    LOWER(a.asset_type) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_pos) LIKE '%' || #{token} || '%'
+                    OR LOWER(t.team_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_loc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_desc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_status) LIKE '%' || #{token} || '%'
+                )
+            </foreach>
+
+            <!-- globalSearch: 일반토큰(AND 규칙 그대로) -->
+            <foreach collection="t.include" item="token">
+                AND (
+                    LOWER(a.asset_type) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(e.emp_pos) LIKE '%' || #{token} || '%'
+                    OR LOWER(t.team_name) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_loc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_desc) LIKE '%' || #{token} || '%'
+                    OR LOWER(a.asset_status) LIKE '%' || #{token} || '%'
+                )
+            </foreach>
+        </where>
+        ORDER BY a.asset_id
+    </select>
+
+    <!-- 신규 자산 등록 (다중) -->
+    <insert id="createAssets">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO
+                asset
+                (
+                    asset_id,
+                    asset_type,
+                    asset_manufacturer,
+                    asset_manufactured_at,
+                    asset_model_name,
+                    asset_sn,
+                    emp_id,
+                    asset_loc,
+                    asset_issuance_date,
+                    asset_desc,
+                    asset_reg_dt,
+                    asset_status
+                )
+            VALUES
+                (
+                    #{item.assetId},
+                    #{item.assetType},
+                    #{item.assetManufacturer},
+                    #{item.assetManufacturedAt},
+                    #{item.assetModelName},
+                    #{item.assetSn},
+                    #{item.empId},
+                    #{item.assetLoc},
+                    #{item.assetIssuanceDate},
+                    #{item.assetDesc},
+                    #{item.assetRegDt},
+                    #{item.assetStatus}
+                )
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <!-- 자산 정보 수정 -->
+    <update id="updateAssets" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
+            UPDATE
+                asset
+            SET
+                asset_manufacturer      = #{item.assetManufacturer},
+                asset_manufactured_at   = #{item.assetManufacturedAt},
+                asset_model_name        = #{item.assetModelName},
+                emp_id                  = #{item.empId},
+                asset_sn                = #{item.assetSn},
+                asset_loc               = #{item.assetLoc},
+                asset_issuance_date     = #{item.assetIssuanceDate},
+                asset_desc              = #{item.assetDesc}
+            WHERE
+                asset_id = #{item.assetId}
+        </foreach>
+    </update>
+
+    <!-- 자산 정보 수정; 폐기처리 -->
+    <update id="disposeAssets" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
+            UPDATE asset
+            SET asset_status = 'N', asset_desc = #{item.assetDesc}
+            WHERE asset_id = #{item.assetId}
+        </foreach>
+    </update>
+</mapper>

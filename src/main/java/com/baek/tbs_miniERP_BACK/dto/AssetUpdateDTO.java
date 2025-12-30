@@ -31,7 +31,7 @@ public class AssetUpdateDTO {
 //        log.info("toEntity() 실행!!");
 //        Employee newEmp = empRepository.findByEmpIdForUpdate(empId);
 //        log.info("newEmp: {}",newEmp.toString());
-////        return Employee.builder().empId(empId).empName(newEmp.get().getEmpName()).empPos(newEmp.get().getEmpPos()).empRegDt(newEmp.get().getEmpRegDt()).empStatus(newEmp.get().getEmpStatus()).build();
+//        return Employee.builder().empId(empId).empName(newEmp.get().getEmpName()).empPos(newEmp.get().getEmpPos()).empRegDt(newEmp.get().getEmpRegDt()).empStatus(newEmp.get().getEmpStatus()).build();
 //        return newEmp;
 //    }
 }

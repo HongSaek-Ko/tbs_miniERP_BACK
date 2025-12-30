@@ -1,6 +1,7 @@
 package com.baek.tbs_miniERP_BACK.controller;
 
 import com.baek.tbs_miniERP_BACK.dto.*;
+import com.baek.tbs_miniERP_BACK.mapper.AssetMapper;
 import com.baek.tbs_miniERP_BACK.service.AssetService;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
 import jakarta.validation.Valid;
@@ -28,23 +29,33 @@ import java.util.List;
 @ToString
 public class AssetController {
     private final AssetService assetService;
+    private final AssetMapper assetMapper;
 
-    // 자산 목록 조회 (페이징 포함)
+    // 자산 목록 조회 (페이징 포함) (JPA)
+//    @GetMapping
+//    public ApiResponse<Page<AssetListDTO>> getAssetList(
+//            @ModelAttribute AssetFilterParams params,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "50") int size
+//    ) {
+//        log.info("params? {}", params.toString());
+//        Pageable pageable = PageRequest.of(page, size);
+//        return ApiResponse.success(assetService.getAssetList(params, pageable));
+//    }
+
+    // 자산 목록 조회 (페이징 포함) (Mybatis)
     @GetMapping
-    public ApiResponse<Page<AssetListDTO>> getAssetList(
-            @ModelAttribute AssetFilterParams params,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size
+    public ApiResponse<List<AssetListDTO>> getAssetList(@RequestParam("assetStatus") String assetStatus
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ApiResponse.success(assetService.getAssetList(params, pageable));
+        return ApiResponse.success(assetService.findAll(assetStatus));
     }
 
     // 엑셀 내보내기(자산)
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportAssets(@ModelAttribute AssetFilterParams params)
             throws UnsupportedEncodingException {
-        List<AssetListDTO> list = assetService.getAssetListForExport(params);
+//        List<AssetListDTO> list = assetService.getAssetListForExport(params); // JPA
+        List<AssetListDTO> list = assetService.findAllForExport(params); // Mybatis
 
         byte[] bytes = ExcelExporter.export(list);
 
@@ -96,13 +107,18 @@ public class AssetController {
     // 신규 자산 등록 (다중)
     @PostMapping
     public ApiResponse<?> create(@Valid @RequestBody List<AssetCreateDTO> req) {
-        assetService.createAsset(req);
-        return ApiResponse.success("등록 성공");
+        int res = assetService.createAsset(req);
+        if(res > 0) {
+            return ApiResponse.success("등록 성공");
+        } else {
+            return ApiResponse.fail("500", "등록 실패");
+        }
     }
 
     // 자산 정보 수정 (다중)
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> assetUpdate(@RequestBody List<AssetUpdateDTO> dto) {
+        log.info(dto.toString());
         assetService.updateAssets(dto);
         return ApiResponse.success("수정 성공");
     }

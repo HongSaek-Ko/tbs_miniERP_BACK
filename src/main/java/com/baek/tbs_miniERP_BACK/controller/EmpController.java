@@ -32,8 +32,8 @@ public class EmpController {
     // 엑셀 추출
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportEmp(@ModelAttribute EmpFilterParams params) throws UnsupportedEncodingException {
-        List<EmpDTO> dtos = empService.getEmpListForExport(params);
-        // TODO: null -> dtos
+//        List<EmpDTO> dtos = empService.getEmpListForExport(params); // jpa 버전
+        List<EmpDTO> dtos = empService.selectEmpForExport(params);
         byte[] bytes = EmpExcelExporter.export(dtos);
         String filename = "직원_목록_" + LocalDate.now() + ".xlsx";
         String encoded = URLEncoder.encode(filename, "UTF-8");
@@ -49,6 +49,7 @@ public class EmpController {
     // 직원 정보 수정
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> empUpdate(@RequestBody List<EmpUpdateDTO> dtos) {
+        log.info(dtos.toString());
         empService.updateEmps(dtos);
         return ApiResponse.success("수정 성공");
     }
