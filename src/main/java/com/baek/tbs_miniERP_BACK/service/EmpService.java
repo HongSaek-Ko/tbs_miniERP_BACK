@@ -106,4 +106,8 @@ public class EmpService {
         log.info("팀 명단: {}", teamMapper.findAllTeamName().toString());
         return teamMapper.findAllTeamName();
     }
+
+    public List<String> findAllEmpPos() {
+        return empMapper.findAllEmpPos();
+    }
 }

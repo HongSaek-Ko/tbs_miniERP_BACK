@@ -1,9 +1,6 @@
 package com.baek.tbs_miniERP_BACK.mapper;
 
-import com.baek.tbs_miniERP_BACK.dto.EmpDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpFilterParams;
-import com.baek.tbs_miniERP_BACK.dto.EmpResignDTO;
-import com.baek.tbs_miniERP_BACK.dto.EmpUpdateDTO;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.util.SearchTokens;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,4 +21,7 @@ public interface EmpMapper {
 
     // 직원 정보 수정; 퇴사처리
     void resignEmps(List<EmpResignDTO> dtos);
+
+    // 직위 조회 (정보 수정 등)
+    List<String> findAllEmpPos();
 }

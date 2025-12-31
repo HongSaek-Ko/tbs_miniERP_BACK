@@ -75,4 +75,11 @@ public class EmpController {
         empService.resignEmps(dtos);
         return ApiResponse.success("퇴사처리 완료");
     }
+
+    // 직위 전체 조회
+    @GetMapping("/empPos")
+    public ApiResponse<List<String>> findAllEmpPos() {
+        log.info("직위 명단: {}", empService.findAllEmpPos().toString());
+        return ApiResponse.success(empService.findAllEmpPos());
+    }
 }

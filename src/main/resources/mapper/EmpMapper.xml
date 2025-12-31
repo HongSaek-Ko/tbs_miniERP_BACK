@@ -111,4 +111,9 @@
             WHERE emp_id = #{item.empId}
         </foreach>
     </update>
+
+    <!-- 전체 직위 조회 -->
+    <select id="findAllEmpPos">
+        SELECT DISTINCT emp_pos AS empPos FROM employee
+    </select>
 </mapper>
