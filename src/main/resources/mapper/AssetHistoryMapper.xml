@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.baek.tbs_miniERP_BACK.mapper.AssetHistoryMapper">
+
+    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryDTO">
+        SELECT
+        ASSET_HISTORY_ID        AS assetHistoryId,
+        ASSET_ID                AS assetId,
+        ASSET_HOLD_EMP          AS assetHoldEmp,
+        ASSET_HOLD_EMP_HIS      AS assetHoldEmpHis,
+        ASSET_HISTORY_DESC      AS assetHistoryDesc,
+        ASSET_HISTORY_DATE      AS assetHistoryDate,
+        ASSET_STATUS_AT_TIME    AS assetStatusAtTime
+        FROM ASSET_HISTORY
+        WHERE ASSET_ID = #{assetId}
+        ORDER BY ASSET_HISTORY_DATE DESC
+    </select>
+
+    <insert id="insertHistory" parameterType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryDTO">
+        INSERT INTO ASSET_HISTORY (
+            ASSET_ID,
+            ASSET_HOLD_EMP_HIS,
+            ASSET_HOLD_EMP,
+            ASSET_HISTORY_DESC,
+            ASSET_STATUS_AT_TIME
+        ) VALUES (
+            #{assetId},
+            #{assetHoldEmpHis},
+            #{assetHoldEmp},
+            #{assetHistoryDesc},
+            #{assetStatusAtTime}
+        )
+    </insert>
+
+</mapper>

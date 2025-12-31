@@ -29,7 +29,6 @@ import java.util.List;
 @ToString
 public class AssetController {
     private final AssetService assetService;
-    private final AssetMapper assetMapper;
 
     // 자산 목록 조회 (페이징 포함) (JPA)
 //    @GetMapping
@@ -121,5 +120,14 @@ public class AssetController {
         log.info(dto.toString());
         assetService.updateAssets(dto);
         return ApiResponse.success("수정 성공");
+    }
+
+    // 변동 이력 조회
+    @GetMapping("/history")
+    public ApiResponse<List<AssetHistoryDTO>> findByAssetId(@RequestParam String assetId) {
+        log.info("assetId? {}", assetId);
+        List<AssetHistoryDTO> dto = assetService.findByAssetId(assetId);
+        log.info(dto.toString());
+        return ApiResponse.success(dto);
     }
 }

@@ -31,7 +31,7 @@ public class ApiResponse<T> {
     }
     */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, null, null, data);
+        return new ApiResponse<>(true, "200", "요청성공", data);
     }
 
     // 실패 응답 (ErrorCode 기반)

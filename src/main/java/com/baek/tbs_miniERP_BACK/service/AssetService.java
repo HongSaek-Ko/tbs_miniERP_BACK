@@ -4,6 +4,7 @@ import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.entity.Asset;
 import com.baek.tbs_miniERP_BACK.entity.Employee;
 import com.baek.tbs_miniERP_BACK.entity.Team;
+import com.baek.tbs_miniERP_BACK.mapper.AssetHistoryMapper;
 import com.baek.tbs_miniERP_BACK.mapper.AssetMapper;
 import com.baek.tbs_miniERP_BACK.repository.AssetRepository;
 import com.baek.tbs_miniERP_BACK.repository.EmpRepository;
@@ -33,6 +34,7 @@ public class AssetService {
     private final AssetRepository assetRepository;
     private final EmpRepository empRepository;
     private final AssetMapper assetMapper;
+    private final AssetHistoryMapper assetHistoryMapper;
 
     // 자산 목록 조회 (JPA)
     public Page<AssetListDTO> getAssetList(AssetFilterParams params, Pageable pageable) {
@@ -189,5 +191,10 @@ public class AssetService {
 //            asset.setAssetDesc(dto.getAssetDesc());
 //        }
         assetMapper.updateAssets(dto);
+    }
+
+    // 자산 (변동) 이력 조회
+    public List<AssetHistoryDTO> findByAssetId(String assetId) {
+        return assetHistoryMapper.findByAssetId(assetId);
     }
 }
