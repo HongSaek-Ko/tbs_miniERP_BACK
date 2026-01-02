@@ -102,7 +102,34 @@ public class AssetService {
 //            asset.setAssetStatus("N");
 //            asset.setAssetDesc(dto.getAssetDesc().trim());
 //        }
+//        assetMapper.disposeAssets(reqs);
+        List<String> ids = reqs.stream().map(AssetDisposeDTO::getAssetId).toList();
+
+        Map<String, AssetSnapshotDTO> beforeMap = assetMapper.findSnapshotByAssetId(ids)
+                .stream().collect(Collectors.toMap(AssetSnapshotDTO::getAssetId, x -> x));
+
         assetMapper.disposeAssets(reqs);
+
+        List<AssetHisCreDTO> histories = reqs.stream().map(d -> {
+            AssetSnapshotDTO before = beforeMap.get(d.getAssetId());
+            String hold = (before !=null ? before.getHoldEmp() :"(?)");
+
+            return AssetHisCreDTO.builder()
+                    .assetId(d.getAssetId())
+                    .holdEmpHis(hold)
+                    .holdEmp(hold)
+                    .historyDesc(d.getAssetDesc())// '폐기' 포함 강제했으니 UI는 isDispose로 칠함
+//                    .historyDate(LocalDateTime.now())
+                    .build();
+        }).toList();
+        assetHistoryMapper.createHistory(histories);
+
+    }
+
+    // 이력 조회
+    @Transactional
+    public List<AssetHistoryListDTO> getAssetHistory(String assetId) {
+        return assetHistoryMapper.findByAssetId(assetId);
     }
 
     // assetId 최대값 찾기 (신규 자산 등록용)
@@ -114,7 +141,52 @@ public class AssetService {
     // 신규 자산 등록
     @Transactional
     public int createAsset(List<AssetCreateDTO> req) {
-        log.info("AssetCreateDTO: {}",req.toString());
+        if (req == null || req.isEmpty()) return 0;
+
+        int inserted = assetMapper.createAssets(req);
+
+        List<String> ids = req.stream()
+                .map(AssetCreateDTO::getAssetId)
+                .filter(s -> s != null && !s.isBlank())
+                .distinct()
+                .toList();
+
+        if (ids.isEmpty()) return inserted;
+
+        Map<String, AssetSnapshotDTO> afterMap =
+                assetMapper.findSnapshotByAssetId(ids).stream()
+                        .collect(Collectors.toMap(
+                                AssetSnapshotDTO::getAssetId,
+                                x -> x,
+                                (a, b) -> a
+                        ));
+
+        List<AssetHisCreDTO> hcdto = req.stream()
+                .map(r -> {
+                    AssetSnapshotDTO snap = afterMap.get(r.getAssetId());
+                    return AssetHisCreDTO.builder()
+                            .assetId(r.getAssetId())
+                            .holdEmpHis(null)
+                            .holdEmp(snap != null ? snap.getHoldEmp() : null) // null이면 DB/프론트에서 표시 처리 권장
+                            .historyDesc(r.getAssetDesc())
+                            .build();
+                })
+                .toList();
+
+        try {
+            assetHistoryMapper.createHistory(hcdto);
+        } catch (Exception e) {
+            Throwable t = e;
+            int i = 0;
+            while (t != null && i < 10) {
+                log.error("cause[{}] {} : {}", i, t.getClass().getName(), t.getMessage());
+                t = t.getCause();
+                i++;
+            }
+            throw e;
+        }
+
+        return inserted;
 //        for(AssetCreateDTO dto : req) {
 //            // 직원 찾기
 //            Employee emp = empRepository.findById(dto.getEmpId())
@@ -133,7 +205,6 @@ public class AssetService {
 //            assetRepository.save(a);
 //
 //        }
-        return assetMapper.createAssets(req);
         // assetId 생성(동시성 방어: 중복이면 재시도)
 //        String prefix = req.getAssetType();
 //        String assetId;
@@ -190,11 +261,30 @@ public class AssetService {
 //            asset.setAssetIssuanceDate(dto.getAssetIssuanceDate());
 //            asset.setAssetDesc(dto.getAssetDesc());
 //        }
+        List<String> ids = dto.stream().map(AssetUpdateDTO::getAssetId).toList();
+
+        // 수정 전
+        Map<String, AssetSnapshotDTO> beforeMap = assetMapper.findSnapshotByAssetId(ids).stream().collect(Collectors.toMap(AssetSnapshotDTO::getAssetId, x -> x));
+
+        // 수정 처리
         assetMapper.updateAssets(dto);
+
+        // 수정 후
+        Map<String, AssetSnapshotDTO> afterMap = assetMapper.findSnapshotByAssetId(ids).stream().collect(Collectors.toMap(AssetSnapshotDTO::getAssetId, x -> x));
+
+        // 이력 생성
+        List<AssetHisCreDTO> hdto = dto.stream().map(d -> {
+            AssetSnapshotDTO before = beforeMap.get(d.getAssetId());
+            AssetSnapshotDTO after = afterMap.get(d.getAssetId());
+            String beforeHold = (before != null ? before.getHoldEmp() : null);
+            String afterHold = (after != null ? after.getHoldEmp() : d.getEmpId() + " (?)");
+            return AssetHisCreDTO.builder().assetId(d.getAssetId()).holdEmpHis(beforeHold).holdEmp(afterHold).historyDesc(d.getAssetDesc()).build();
+        }).toList();
+        assetHistoryMapper.createHistory(hdto);
     }
 
     // 자산 (변동) 이력 조회
-    public List<AssetHistoryDTO> findByAssetId(String assetId) {
+    public List<AssetHistoryListDTO> findByAssetId(String assetId) {
         return assetHistoryMapper.findByAssetId(assetId);
     }
 }

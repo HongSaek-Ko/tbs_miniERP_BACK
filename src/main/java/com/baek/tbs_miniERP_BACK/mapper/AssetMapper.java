@@ -30,4 +30,8 @@ public interface AssetMapper {
     // 자산 정보 수정; 폐기 처리
     void disposeAssets(List<AssetDisposeDTO> dtos);
 
+    List<AssetSnapshotDTO> findSnapshotByAssetId(@Param("list") List<String> list);
+
+
+
 }

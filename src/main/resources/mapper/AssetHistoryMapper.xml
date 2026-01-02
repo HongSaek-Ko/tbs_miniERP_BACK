@@ -5,34 +5,64 @@
 
 <mapper namespace="com.baek.tbs_miniERP_BACK.mapper.AssetHistoryMapper">
 
-    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryDTO">
-        SELECT
-        ASSET_HISTORY_ID        AS assetHistoryId,
-        ASSET_ID                AS assetId,
-        ASSET_HOLD_EMP          AS assetHoldEmp,
-        ASSET_HOLD_EMP_HIS      AS assetHoldEmpHis,
-        ASSET_HISTORY_DESC      AS assetHistoryDesc,
-        ASSET_HISTORY_DATE      AS assetHistoryDate,
-        ASSET_STATUS_AT_TIME    AS assetStatusAtTime
-        FROM ASSET_HISTORY
-        WHERE ASSET_ID = #{assetId}
-        ORDER BY ASSET_HISTORY_DATE DESC
-    </select>
 
-    <insert id="insertHistory" parameterType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryDTO">
-        INSERT INTO ASSET_HISTORY (
-            ASSET_ID,
-            ASSET_HOLD_EMP_HIS,
-            ASSET_HOLD_EMP,
-            ASSET_HISTORY_DESC,
-            ASSET_STATUS_AT_TIME
-        ) VALUES (
-            #{assetId},
-            #{assetHoldEmpHis},
-            #{assetHoldEmp},
-            #{assetHistoryDesc},
-            #{assetStatusAtTime}
-        )
+    <insert id="createHistory">
+        INSERT ALL
+        <foreach collection="list" item="h">
+            INTO asset_history (
+                asset_history_seq,
+                asset_id,
+                asset_hold_emp_his,
+                asset_hold_emp,
+                asset_history_desc
+            ) VALUES (
+                ASSET_HISTORY_SEQ.NEXTVAL,
+                #{h.assetId},
+                #{h.holdEmpHis, jdbcType=VARCHAR},
+                #{h.holdEmp, jdbcType=VARCHAR},
+                #{h.historyDesc, jdbcType=VARCHAR}
+            )
+        </foreach>
+        SELECT 1 FROM DUAL
     </insert>
+
+    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">
+        SELECT
+            a.asset_history_seq AS assetHistorySeq,
+            a.asset_id          AS assetId,
+            a.asset_id || '_H' || LPAD(
+                ROW_NUMBER() OVER (
+                    PARTITION BY a.asset_id
+                    ORDER BY a.asset_history_date, a.asset_history_seq),
+                    3,
+                    '0'
+            ) AS displayId,
+
+            a.asset_hold_emp AS assetHoldEmp,
+            a.asset_hold_emp_his AS assetHoldEmpHis,
+            a.asset_history_desc AS assetHistoryDesc,
+            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,
+
+            CASE
+                WHEN ROW_NUMBER() OVER (
+                    PARTITION BY a.asset_id
+                    ORDER BY a.asset_history_date, a.asset_history_seq) = 1
+            THEN 1 ELSE 0
+            END AS isFirst,
+
+            CASE
+                WHEN a.asset_hold_emp_his IS NOT NULL
+                AND a.asset_hold_emp_his != a.asset_hold_emp
+            THEN 1 ELSE 0
+            END AS isTransfer,
+
+            CASE
+                WHEN INSTR(NVL(a.asset_history_desc, ''), '폐기') > 0
+            THEN 1 ELSE 0
+            END AS isDispose
+        FROM asset_history a
+        WHERE a.asset_id = #{assetId}
+        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC
+    </select>
 
 </mapper>

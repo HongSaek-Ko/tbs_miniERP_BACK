@@ -4,6 +4,7 @@ import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.mapper.AssetMapper;
 import com.baek.tbs_miniERP_BACK.service.AssetService;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
+import com.baek.tbs_miniERP_BACK.util.HisExcelExporter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -69,7 +70,7 @@ public class AssetController {
                 .body(bytes);
     }
 
-    // 자산 폐지
+    // 자산 폐기
     @PatchMapping("/dispose")
     public ApiResponse<?> disposeAssets(@RequestBody List<AssetDisposeDTO> reqs) {
 
@@ -122,12 +123,29 @@ public class AssetController {
         return ApiResponse.success("수정 성공");
     }
 
-    // 변동 이력 조회
-    @GetMapping("/history")
-    public ApiResponse<List<AssetHistoryDTO>> findByAssetId(@RequestParam String assetId) {
-        log.info("assetId? {}", assetId);
-        List<AssetHistoryDTO> dto = assetService.findByAssetId(assetId);
-        log.info(dto.toString());
+    // 자산별 변동 이력 조회
+    @GetMapping("/history/{assetId}")
+    public ApiResponse<List<AssetHistoryListDTO>> findByAssetId(@PathVariable("assetId") String assetId) {
+        List<AssetHistoryListDTO> dto = assetService.findByAssetId(assetId);
         return ApiResponse.success(dto);
+    }
+
+    // 엑셀 내보내기(자산)
+    @GetMapping("/history/export/{assetId}")
+    public ResponseEntity<byte[]> exportAssetHistory(@PathVariable("assetId") String assetId)
+            throws UnsupportedEncodingException {
+        List<AssetHistoryListDTO> list = assetService.findByAssetId(assetId); // Mybatis
+
+        byte[] bytes = HisExcelExporter.export(list);
+
+        String filename = assetId +"_변동 이력_" + LocalDate.now() + ".xlsx";
+        String encoded = URLEncoder.encode(filename, "UTF-8");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encoded + "\"")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .body(bytes);
     }
 }

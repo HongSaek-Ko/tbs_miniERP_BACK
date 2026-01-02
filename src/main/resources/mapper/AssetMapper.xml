@@ -192,4 +192,19 @@
             WHERE asset_id = #{item.assetId}
         </foreach>
     </update>
+
+    <!-- 자산 이력 조회용 스냅샷 -->
+    <select id="findSnapshotByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetSnapshotDTO">
+        SELECT
+            a.asset_id AS assetId,
+            a.emp_id   AS empId,
+            (e.emp_name || ' (' || e.emp_id || ')') AS holdEmp,
+            a.asset_status AS assetStatus
+        FROM asset a
+        JOIN employee e ON e.emp_id = a.emp_id
+        WHERE a.asset_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>
