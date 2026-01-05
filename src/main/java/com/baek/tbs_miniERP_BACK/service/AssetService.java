@@ -135,7 +135,17 @@ public class AssetService {
     // assetId 최대값 찾기 (신규 자산 등록용)
     public String getMaxAssetId(String assetType) {
 //        return assetRepository.findMaxAssetIdByAssetType(assetType);
-        return assetMapper.findMaxIdByAssetType(assetType);
+        log.info("유형 코드: {}", assetType);
+        log.info("최댓값: {}", assetMapper.findMaxIdByAssetType(assetType));
+        String maxId = assetMapper.findMaxIdByAssetType(assetType);
+        if(maxId == null) {
+            if(assetType.equals("노트북")) {
+                maxId = "B000";
+            } else {
+                maxId = "M000";
+            }
+        }
+        return maxId;
     }
 
     // 신규 자산 등록
@@ -173,6 +183,7 @@ public class AssetService {
                 })
                 .toList();
 
+        log.info("생성 이력 목록: {}", hcdto.toString());
         try {
             assetHistoryMapper.createHistory(hcdto);
         } catch (Exception e) {

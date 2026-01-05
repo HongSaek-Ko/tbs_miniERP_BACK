@@ -10,13 +10,13 @@
         INSERT ALL
         <foreach collection="list" item="h">
             INTO asset_history (
-                asset_history_seq,
+<!--                asset_history_seq,-->
                 asset_id,
                 asset_hold_emp_his,
                 asset_hold_emp,
                 asset_history_desc
             ) VALUES (
-                ASSET_HISTORY_SEQ.NEXTVAL,
+<!--                ASSET_HISTORY_SEQ.NEXTVAL, 시퀀스(PK)는 트리거로 넣고 있어서 이걸로 넣으면 안됨. 애초에 이걸로 넣으면 일괄 처리 시 에러 발생 -->
                 #{h.assetId},
                 #{h.holdEmpHis, jdbcType=VARCHAR},
                 #{h.holdEmp, jdbcType=VARCHAR},
@@ -43,6 +43,7 @@
             a.asset_history_desc AS assetHistoryDesc,
             CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,
 
+            <!-- '신규' = (자산별)이력일자 최상위(RN 1) -->
             CASE
                 WHEN ROW_NUMBER() OVER (
                     PARTITION BY a.asset_id
@@ -50,12 +51,14 @@
             THEN 1 ELSE 0
             END AS isFirst,
 
+            <!-- '이관' = ('이전 소유자' != '현재 소유자') -->
             CASE
                 WHEN a.asset_hold_emp_his IS NOT NULL
                 AND a.asset_hold_emp_his != a.asset_hold_emp
             THEN 1 ELSE 0
             END AS isTransfer,
 
+            <!-- '폐기' = 비고(사유)에 '폐기'가 포함된 경우 -->
             CASE
                 WHEN INSTR(NVL(a.asset_history_desc, ''), '폐기') > 0
             THEN 1 ELSE 0
