@@ -6,24 +6,42 @@
 <mapper namespace="com.baek.tbs_miniERP_BACK.mapper.AssetHistoryMapper">
 
 
-    <insert id="createHistory">
-        INSERT ALL
-        <foreach collection="list" item="h">
-            INTO asset_history (
-<!--                asset_history_seq,-->
-                asset_id,
-                asset_hold_emp_his,
-                asset_hold_emp,
-                asset_history_desc
-            ) VALUES (
-<!--                ASSET_HISTORY_SEQ.NEXTVAL, 시퀀스(PK)는 트리거로 넣고 있어서 이걸로 넣으면 안됨. 애초에 이걸로 넣으면 일괄 처리 시 에러 발생 -->
+    <!-- Oracle -->
+<!--    <insert id="createHistory">-->
+<!--        INSERT ALL-->
+<!--        <foreach collection="list" item="h">-->
+<!--            INTO asset_history (-->
+<!--                asset_id,-->
+<!--                asset_hold_emp_his,-->
+<!--                asset_hold_emp,-->
+<!--                asset_history_desc-->
+<!--            ) VALUES (-->
+<!--                #{h.assetId},-->
+<!--                #{h.holdEmpHis, jdbcType=VARCHAR},-->
+<!--                #{h.holdEmp, jdbcType=VARCHAR},-->
+<!--                #{h.historyDesc, jdbcType=VARCHAR}-->
+<!--            )-->
+<!--        </foreach>-->
+<!--        SELECT 1 FROM DUAL-->
+<!--    </insert>-->
+
+    <!-- Postgresql -->
+    <insert id="createHistory" parameterType="java.util.List">
+        INSERT INTO asset_history (
+            asset_id,
+            asset_hold_emp_his,
+            asset_hold_emp,
+            asset_history_desc
+        )
+        VALUES
+        <foreach collection="list" item="h" separator=",">
+            (
                 #{h.assetId},
                 #{h.holdEmpHis, jdbcType=VARCHAR},
                 #{h.holdEmp, jdbcType=VARCHAR},
                 #{h.historyDesc, jdbcType=VARCHAR}
             )
         </foreach>
-        SELECT 1 FROM DUAL
     </insert>
 
     <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">
