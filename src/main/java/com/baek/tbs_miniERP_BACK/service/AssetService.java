@@ -177,7 +177,7 @@ public class AssetService {
                     return AssetHisCreDTO.builder()
                             .assetId(r.getAssetId())
                             .holdEmpHis(null)
-                            .holdEmp(snap != null ? snap.getHoldEmp() : null) // null이면 DB/프론트에서 표시 처리 권장
+                            .holdEmp(snap != null ? snap.getHoldEmp() : null) // null이면 DB/프론트에서 표시 처리
                             .historyDesc(r.getAssetDesc())
                             .build();
                 })

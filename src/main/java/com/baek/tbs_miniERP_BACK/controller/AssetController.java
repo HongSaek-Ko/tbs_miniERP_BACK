@@ -54,7 +54,7 @@ public class AssetController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportAssets(@ModelAttribute AssetFilterParams params)
             throws UnsupportedEncodingException {
-//        List<AssetListDTO> list = assetService.getAssetListForExport(params); // JPA
+        // List<AssetListDTO> list = assetService.getAssetListForExport(params); // JPA
         List<AssetListDTO> list = assetService.findAllForExport(params); // Mybatis
 
         byte[] bytes = ExcelExporter.export(list);
