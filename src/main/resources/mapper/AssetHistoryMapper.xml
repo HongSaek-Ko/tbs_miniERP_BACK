@@ -31,7 +31,8 @@
             asset_id,
             asset_hold_emp_his,
             asset_hold_emp,
-            asset_history_desc
+            asset_history_desc,
+            asset_history_date
         )
         VALUES
         <foreach collection="list" item="h" separator=",">
@@ -39,7 +40,8 @@
                 #{h.assetId},
                 #{h.holdEmpHis, jdbcType=VARCHAR},
                 #{h.holdEmp, jdbcType=VARCHAR},
-                #{h.historyDesc, jdbcType=VARCHAR}
+                #{h.historyDesc, jdbcType=VARCHAR},
+                COALESCE(#{h.historyDate}, now())
             )
         </foreach>
     </insert>

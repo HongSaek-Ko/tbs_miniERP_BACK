@@ -187,15 +187,15 @@
             #{item.assetId},
             #{item.assetType},
             #{item.assetManufacturer},
-            #{item.assetManufacturedAt},
+            to_timestamp(#{item.assetManufacturedAt}, 'YYYY-MM-DD'),
             #{item.assetModelName},
             #{item.assetSn},
             #{item.empId},
             #{item.assetLoc},
-            #{item.assetIssuanceDate},
+            to_timestamp(#{item.assetIssuanceDate}, 'YYYY-MM-DD'),
             #{item.assetDesc},
-            #{item.assetRegDt},
-            #{item.assetStatus}
+            COALESCE(#{item.assetRegDt}, now()),
+            COALESCE(#{item.assetStatus}, 'HOLD')
             )
         </foreach>
     </insert>
@@ -237,12 +237,12 @@
             (
             #{item.assetId},
             #{item.assetManufacturer},
-            #{item.assetManufacturedAt},
+            to_timestamp(#{item.assetManufacturedAt}, 'YYYY-MM-DD'),
             #{item.assetModelName},
             #{item.empId},
             #{item.assetSn},
             #{item.assetLoc},
-            #{item.assetIssuanceDate},
+            to_timestamp(#{item.assetIssuanceDate}, 'YYYY-MM-DD'),
             #{item.assetDesc}
             )
         </foreach>
