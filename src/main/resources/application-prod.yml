@@ -8,8 +8,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      hbm2ddl:
-        auto: update
+      ddl-auto: update   # 처음엔 update로, 안정화되면 validate + migration 권장
     show-sql: false
     properties:
       hibernate:
