@@ -237,12 +237,12 @@
             (
             #{item.assetId},
             #{item.assetManufacturer},
-            to_timestamp(#{item.assetManufacturedAt}, 'YYYY-MM-DD'),
+            #{item.assetManufacturedAt},
             #{item.assetModelName},
             #{item.empId},
             #{item.assetSn},
             #{item.assetLoc},
-            to_timestamp(#{item.assetIssuanceDate}, 'YYYY-MM-DD'),
+            #{item.assetIssuanceDate},
             #{item.assetDesc}
             )
         </foreach>

@@ -88,29 +88,76 @@
         ORDER BY e.EMP_ID
     </select>
 
-    <!-- 직원 정보 수정 -->
+    <!-- 직원 정보 수정 (ORA) -->
+<!--    <update id="updateEmps" parameterType="java.util.List">-->
+<!--        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">-->
+<!--            UPDATE-->
+<!--                employee-->
+<!--            SET-->
+<!--                emp_name = #{item.empName},-->
+<!--                emp_pos = #{item.empPos},-->
+<!--                emp_status = #{item.empStatus},-->
+<!--                team_id = (SELECT team_id FROM team WHERE team_name = #{item.teamName})-->
+<!--            WHERE-->
+<!--                emp_id = #{item.empId}-->
+<!--        </foreach>-->
+<!--    </update>-->
+
+    <!-- 직원 정보 수정 (PG) -->
     <update id="updateEmps" parameterType="java.util.List">
-        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
-            UPDATE
-                employee
-            SET
-                emp_name = #{item.empName},
-                emp_pos = #{item.empPos},
-                emp_status = #{item.empStatus},
-                team_id = (SELECT team_id FROM team WHERE team_name = #{item.teamName})
-            WHERE
-                emp_id = #{item.empId}
-        </foreach>
+        UPDATE
+            employee e
+        SET
+            emp_name = v.emp_name,
+            emp_pos = v.emp_pos,
+            emp_status = v.emp_status,
+            team_id = v.team_id
+        FROM (
+            VALUES
+            <foreach collection="list" item="item" separator=",">
+                (
+                    #{item.empId},
+                    #{item.empName},
+                    #{item.empPos},
+                    #{item.empStatus},
+                    (SELECT team_id FROM team WHERE team_name = #{item.teamName})
+                )
+            </foreach>
+        ) AS v(
+            emp_id,
+            emp_name,
+            emp_pos,
+            emp_status,
+            team_id
+        ) WHERE e.emp_id = v.emp_id
     </update>
 
-    <!-- 직원 정보 수정; 퇴사처리 -->
+    <!-- 직원 정보 수정; 퇴사처리 (ORA) -->
+<!--    <update id="resignEmps" parameterType="java.util.List">-->
+<!--        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">-->
+<!--            UPDATE employee-->
+<!--            SET emp_status = #{item.empStatus}-->
+<!--            WHERE emp_id = #{item.empId}-->
+<!--        </foreach>-->
+<!--    </update>-->
+
+    <!-- 퇴사처리 (PG) -->
     <update id="resignEmps" parameterType="java.util.List">
-        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
-            UPDATE employee
-            SET emp_status = #{item.empStatus}
-            WHERE emp_id = #{item.empId}
+        UPDATE employee e
+        SET
+            emp_status = v.emp_status
+        FROM (
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.empId},
+            #{item.empStatus}
+            )
         </foreach>
+        ) AS v(emp_id, emp_status)
+        WHERE e.emp_id = v.emp_id
     </update>
+
 
     <!-- 전체 직위 조회 -->
     <select id="findAllEmpPos">

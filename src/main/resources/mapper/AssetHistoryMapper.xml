@@ -31,8 +31,7 @@
             asset_id,
             asset_hold_emp_his,
             asset_hold_emp,
-            asset_history_desc,
-            asset_history_date
+            asset_history_desc
         )
         VALUES
         <foreach collection="list" item="h" separator=",">
@@ -40,8 +39,7 @@
                 #{h.assetId},
                 #{h.holdEmpHis, jdbcType=VARCHAR},
                 #{h.holdEmp, jdbcType=VARCHAR},
-                #{h.historyDesc, jdbcType=VARCHAR},
-                COALESCE(#{h.historyDate}, now())
+                #{h.historyDesc, jdbcType=VARCHAR}
             )
         </foreach>
     </insert>
@@ -51,11 +49,10 @@
             a.asset_history_seq AS assetHistorySeq,
             a.asset_id          AS assetId,
             a.asset_id || '_H' || LPAD(
-                ROW_NUMBER() OVER (
+                (ROW_NUMBER() OVER (
                     PARTITION BY a.asset_id
-                    ORDER BY a.asset_history_date, a.asset_history_seq),
-                    3,
-                    '0'
+                    ORDER BY a.asset_history_date, a.asset_history_seq
+                ))::text, 3, '0'
             ) AS displayId,
 
             a.asset_hold_emp AS assetHoldEmp,
@@ -80,7 +77,7 @@
 
             <!-- '폐기' = 비고(사유)에 '폐기'가 포함된 경우 -->
             CASE
-                WHEN INSTR(NVL(a.asset_history_desc, ''), '폐기') > 0
+                WHEN STRPOS(COALESCE(a.asset_history_desc, ''), '폐기') > 0
             THEN 1 ELSE 0
             END AS isDispose
         FROM asset_history a
