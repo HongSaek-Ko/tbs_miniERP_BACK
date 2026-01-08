@@ -66,6 +66,16 @@ public class EmpService {
         return dto;
     }
 
+    // 다음 사번 조회
+    public String nextEmpId() {
+        return empMapper.nextEmpId();
+    }
+
+    // 직원 정보 일괄 등록
+    public int createEmps(List<EmpCreateDTO> dtos) {
+        int res = empMapper.createEmps(dtos);
+        return res;
+    }
 
     // 직원 정보 업데이트
 //    @Transactional

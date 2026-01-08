@@ -16,6 +16,12 @@ public interface EmpMapper {
     // 전체 조회 (엑셀 추출용)
     List<EmpDTO> selectEmpForExport(@Param("p") EmpFilterParams p, @Param("t") SearchTokens t);
 
+    // 다음 사번 조회 (등록 폼용)
+    String nextEmpId();
+
+    // 직원 등록
+    int createEmps(List<EmpCreateDTO> dtos);
+
     // 직원 정보 수정
     void updateEmps(List<EmpUpdateDTO> dtos);
 

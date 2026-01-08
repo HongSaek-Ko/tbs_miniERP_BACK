@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,6 +47,26 @@ public class EmpController {
                 .body(bytes);
     }
 
+    // 직원 다음 번호 조회 (등록 폼용)
+    @GetMapping("/nextId")
+    public ApiResponse<String> nextEmpId() {
+        String maxId = empService.nextEmpId(); // 예: E009
+        String code = maxId.substring(0,1); // E
+        int nextId = Integer.parseInt(maxId.replaceAll("[^0-9]]", ""))+1; // 10
+        DecimalFormat df = new DecimalFormat("000"); // 포맷 지정
+        return ApiResponse.success(code+df.format(nextId)); // E + 10->010 => E010
+    }
+
+    // 직원 정보 등록
+    @PostMapping("/bulkInsert")
+    public ApiResponse<?> createEmps(@RequestBody List<EmpCreateDTO> reqs) {
+         int res = empService.createEmps(reqs);
+        if(res > 0) {
+            return ApiResponse.success("등록 성공");
+        } else {
+            return ApiResponse.fail("500", "등록 실패");
+        }
+    }
     // 직원 정보 수정
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> empUpdate(@RequestBody List<EmpUpdateDTO> dtos) {

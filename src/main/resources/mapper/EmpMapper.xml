@@ -88,6 +88,62 @@
         ORDER BY e.EMP_ID
     </select>
 
+    <!-- 다음 사번 조회 -->
+    <select id="nextEmpId">
+        SELECT MAX(emp_id)
+        FROM employee
+    </select>
+
+    <!-- 직원 일괄 등록 (PG) -->
+    <insert id="createEmps" parameterType="java.util.List">
+        INSERT INTO employee (
+            emp_id,
+            emp_name,
+            emp_pos,
+            emp_status,
+            emp_reg_dt,
+            team_id
+        )
+        VALUES
+        <foreach collection="list" item="e" separator=",">
+            (
+                #{e.empId},
+                #{e.empName},
+                #{e.empPos},
+                'EMPLOYEE',
+                #{e.empRegDt},
+                (SELECT team_id FROM team WHERE team_id = #{e.teamName}),
+            )
+        </foreach>
+    </insert>
+<!--    직원 등록 (ORA) -->
+<!--    <insert id="createEmps">-->
+<!--        INSERT ALL-->
+<!--        <foreach collection="list" item="e">-->
+<!--            INTO-->
+<!--                employee-->
+<!--                (-->
+<!--                    emp_id,-->
+<!--                    emp_name,-->
+<!--                    emp_pos,-->
+<!--                    emp_status,-->
+<!--                    emp_reg_dt,-->
+<!--                    team_id-->
+<!--                )-->
+<!--            VALUES-->
+<!--                (-->
+<!--                    #{e.empId},-->
+<!--                    #{e.empName},-->
+<!--                    #{e.empPos},-->
+<!--                    'EMPLOYEE',-->
+<!--                    #{e.empRegDt},-->
+<!--                    (SELECT team_id FROM team WHERE team_name = #{e.teamName})-->
+<!--                )-->
+<!--        </foreach>-->
+<!--        SELECT 1 FROM DUAL-->
+<!--    </insert>-->
+
+
     <!-- 직원 정보 수정 (ORA) -->
 <!--    <update id="updateEmps" parameterType="java.util.List">-->
 <!--        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">-->
