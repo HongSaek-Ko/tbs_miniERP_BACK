@@ -58,7 +58,7 @@ public class EmpController {
     }
 
     // 직원 정보 등록
-    @PostMapping("/bulkInsert")
+    @PostMapping
     public ApiResponse<?> createEmps(@RequestBody List<EmpCreateDTO> reqs) {
          int res = empService.createEmps(reqs);
         if(res > 0) {
