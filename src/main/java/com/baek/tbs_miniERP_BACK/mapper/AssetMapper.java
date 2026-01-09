@@ -21,6 +21,9 @@ public interface AssetMapper {
     // 자산 다음 번호 조회 (등록용)
     String findMaxIdByAssetType(String assetType);
 
+    // 자산 시리얼 번호 조회
+    List<String> findAllSn();
+
     // 신규 자산 정보 등록
     int createAssets(@Param("list") List<AssetCreateDTO> dtos);
 

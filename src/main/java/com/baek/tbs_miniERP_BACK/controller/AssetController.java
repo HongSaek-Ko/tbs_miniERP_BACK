@@ -94,6 +94,12 @@ public class AssetController {
         return ApiResponse.success("자산 폐기 완료");
     }
 
+    // 자산 시리얼 번호 조회 (유효성 검증)
+    @GetMapping("/sn")
+    public ApiResponse<List<String>> findAllSn() {
+        return ApiResponse.success(assetService.findAllSn());
+    }
+
     // 자산 다음 번호 조회 (등록 폼용)
     @GetMapping("/nextId")
     public ApiResponse<String> nextAssetId(String assetType) {

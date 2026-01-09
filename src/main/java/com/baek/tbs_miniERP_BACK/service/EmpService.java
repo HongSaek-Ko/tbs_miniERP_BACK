@@ -71,6 +71,11 @@ public class EmpService {
         return empMapper.nextEmpId();
     }
 
+    // 전체 사번 조회
+    public List<String> findAllEmpId() {
+        return empMapper.findAllEmpId();
+    }
+
     // 직원 정보 일괄 등록
     public int createEmps(List<EmpCreateDTO> dtos) {
         int res = empMapper.createEmps(dtos);

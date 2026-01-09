@@ -57,6 +57,13 @@ public class EmpController {
         return ApiResponse.success(code+df.format(nextId)); // E + 10->010 => E010
     }
 
+    // 전체 사번 조회 (등록 폼용)
+    @GetMapping("/eIds")
+    public ApiResponse<List<String>> findAllEmpId() {
+        List<String> eIds = empService.findAllEmpId();
+            return ApiResponse.success(eIds);
+    }
+
     // 직원 정보 등록
     @PostMapping
     public ApiResponse<?> createEmps(@RequestBody List<EmpCreateDTO> reqs) {

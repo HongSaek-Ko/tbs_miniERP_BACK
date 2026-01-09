@@ -301,4 +301,10 @@
             #{id}
         </foreach>
     </select>
+
+    <!-- 시리얼번호 조회 (유효성 검증) -->
+    <select id="findAllSn">
+        SELECT asset_sn
+        FROM asset
+    </select>
 </mapper>

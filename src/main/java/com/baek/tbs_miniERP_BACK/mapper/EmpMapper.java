@@ -19,6 +19,9 @@ public interface EmpMapper {
     // 다음 사번 조회 (등록 폼용)
     String nextEmpId();
 
+    // 전체 사번 조회 (등록 폼용)
+    List<String> findAllEmpId();
+
     // 직원 등록
     int createEmps(List<EmpCreateDTO> dtos);
 

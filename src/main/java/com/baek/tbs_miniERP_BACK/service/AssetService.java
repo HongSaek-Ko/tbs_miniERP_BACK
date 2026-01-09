@@ -148,6 +148,10 @@ public class AssetService {
         return maxId;
     }
 
+    // 시리얼 번호 목록
+    public List<String> findAllSn() {
+        return assetMapper.findAllSn();
+    }
     // 신규 자산 등록
     @Transactional
     public int createAsset(List<AssetCreateDTO> req) {

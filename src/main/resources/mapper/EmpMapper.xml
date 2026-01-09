@@ -94,6 +94,12 @@
         FROM employee
     </select>
 
+    <!-- 전체 사번 조회   -->
+    <select id="findAllEmpId">
+        SELECT emp_id
+        FROM employee
+    </select>
+
     <!-- 직원 일괄 등록 (PG) -->
     <insert id="createEmps" parameterType="java.util.List">
         INSERT INTO employee (
@@ -112,7 +118,7 @@
                 #{e.empPos},
                 'EMPLOYEE',
                 #{e.empRegDt},
-                (SELECT team_id FROM team WHERE team_id = #{e.teamName}),
+                (SELECT team_id FROM team WHERE team_name = #{e.teamName})
             )
         </foreach>
     </insert>
