@@ -12,9 +12,9 @@
             e.EMP_POS  AS empPos,
             CASE e.EMP_STATUS
                 WHEN 'EMPLOYEE' THEN '재직'
-                WHEN 'RESIGN'   THEN '퇴직'
-                WHEN 'ONLEAVE'  THEN '휴직'
-                ELSE '기타'
+<!--                WHEN 'RESIGN'   THEN '퇴직'-->
+<!--                WHEN 'ONLEAVE'  THEN '휴직'-->
+                ELSE e.EMP_STATUS
             END AS empStatus,
             t.TEAM_NAME AS teamName
         FROM EMPLOYEE e
