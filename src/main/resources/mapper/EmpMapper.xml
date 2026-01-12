@@ -117,7 +117,7 @@
                 #{e.empName},
                 #{e.empPos},
                 'EMPLOYEE',
-                #{e.empRegDt},
+                to_timestamp(#{e.empRegDt}, 'YYYY-MM-DD'),
                 (SELECT team_id FROM team WHERE team_name = #{e.teamName})
             )
         </foreach>
