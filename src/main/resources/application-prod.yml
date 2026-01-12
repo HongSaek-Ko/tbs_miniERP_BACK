@@ -12,10 +12,15 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        format_sql: false
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
 
 logging:
   level:
-    root: info
-    org.mybatis: info
-    org.apache.ibatis: info
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+    org.mybatis.spring: DEBUG
+    java.sql: DEBUG
+    javax.sql: DEBUG
+    org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator: DEBUG
