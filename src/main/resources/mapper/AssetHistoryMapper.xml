@@ -128,23 +128,41 @@
 <!--        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC-->
 <!--        </select>-->
 
-    <!-- 전체 이력 조회. 정렬 기준 이력 생성 시간 DESC > 이력 PK DESC -->
+    <!-- 전체 이력 조회(ORA). 정렬 기준 이력 생성 시간 DESC > 이력 PK DESC -->
+<!--    <select id="findAllHistories">-->
+<!--        SELECT-->
+<!--                a.asset_history_seq AS assetHistorySeq,-->
+<!--                a.asset_id          AS assetId,-->
+<!--                a.asset_id || '_H' || LPAD(-->
+<!--                    TO_CHAR(-->
+<!--                        ROW_NUMBER() OVER (-->
+<!--                            PARTITION BY a.asset_id-->
+<!--                            ORDER BY a.asset_history_date, a.asset_history_seq-->
+<!--                        )-->
+<!--                    ),-->
+<!--                    3, '0'-->
+<!--                ) AS displayId,-->
+<!--                a.asset_hold_emp      AS assetHoldEmp,-->
+<!--                a.asset_history_desc  AS assetHistoryDesc,-->
+<!--                CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate-->
+<!--        FROM asset_history a-->
+<!--        ORDER BY a.asset_history_date DESC, 1 DESC-->
+<!--    </select>-->
+
+    <!-- 전체 이력 조회 (PG) -->
     <select id="findAllHistories">
         SELECT
-                a.asset_history_seq AS assetHistorySeq,
-                a.asset_id          AS assetId,
-                a.asset_id || '_H' || LPAD(
-                    TO_CHAR(
-                        ROW_NUMBER() OVER (
-                            PARTITION BY a.asset_id
-                            ORDER BY a.asset_history_date, a.asset_history_seq
-                        )
-                    ),
-                    3, '0'
-                ) AS displayId,
-                a.asset_hold_emp      AS assetHoldEmp,
-                a.asset_history_desc  AS assetHistoryDesc,
-                CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate
+        a.asset_history_seq AS assetHistorySeq,
+        a.asset_id          AS assetId,
+        a.asset_id || '_H' || LPAD(
+            TO_CHAR(
+                ROW_NUMBER() OVER (
+                                PARTITION BY a.asset_id
+                                ORDER BY a.asset_history_date, a.asset_history_seq))::text, 3, '0'
+        ) AS displayId,
+        a.asset_hold_emp      AS assetHoldEmp,
+        a.asset_history_desc  AS assetHistoryDesc,
+        CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate
         FROM asset_history a
         ORDER BY a.asset_history_date DESC, 1 DESC
     </select>
