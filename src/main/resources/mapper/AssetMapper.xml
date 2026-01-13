@@ -126,6 +126,16 @@
         ORDER BY a.asset_id
     </select>
 
+    <!-- 시리얼 번호 조회 (자산 등록 전 검증용) -->
+    <select id="validSn">
+        SELECT COUNT(*)
+        FROM asset
+        WHERE asset_sn IN
+        <foreach collection="list" item="sn" open="(" close=")" separator=",">
+            #{sn}
+        </foreach>
+    </select>
+
     <!-- 신규 자산 등록 (다중) (Oracle) -->
 <!--    <insert id="createAssets">-->
 <!--        INSERT ALL-->
@@ -199,6 +209,68 @@
             )
         </foreach>
     </insert>
+
+    <!-- 등록 시 SN 유효성 검사 (PG) -->
+    <!-- 요청-DB 중복체크 -->
+    <select id="countSnConflicts" resultType="int">
+        WITH req(asset_id, new_sn) AS (
+        VALUES
+        <foreach collection="list" item="r" separator=",">
+            (#{r.assetId}, #{r.assetSn})
+        </foreach>
+        )
+        SELECT COUNT(*)
+        FROM req
+        JOIN asset a
+        ON a.asset_sn = req.new_sn
+        AND a.asset_id != req.asset_id
+    </select>
+
+    <!-- DTO 자체 중복체크 -->
+    <select id="countSnDupInReq" resultType="int">
+        WITH req(asset_id, new_sn) AS (
+        VALUES
+        <foreach collection="list" item="r" separator=",">
+            (#{r.assetId}, #{r.assetSn})
+        </foreach>
+        )
+        SELECT COUNT(*)
+        FROM (
+        SELECT new_sn
+        FROM req
+        GROUP BY new_sn
+        HAVING COUNT(*) > 1
+        ) t
+    </select>
+
+    <!-- ORA -->
+<!--    <select id="countSnConflicts" resultType="int">-->
+<!--        WITH req(asset_id, new_sn) AS (-->
+<!--        <foreach collection="list" item="r" separator=" UNION ALL ">-->
+<!--            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual-->
+<!--        </foreach>-->
+<!--        )-->
+<!--        SELECT COUNT(*)-->
+<!--        FROM req-->
+<!--        JOIN asset a-->
+<!--        ON a.asset_sn = req.new_sn-->
+<!--        AND a.asset_id != req.asset_id-->
+<!--    </select>-->
+
+<!--    <select id="countSnDupInReq" resultType="int">-->
+<!--        WITH req(asset_id, new_sn) AS (-->
+<!--        <foreach collection="list" item="r" separator=" UNION ALL ">-->
+<!--            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual-->
+<!--        </foreach>-->
+<!--        )-->
+<!--        SELECT COUNT(*)-->
+<!--        FROM (-->
+<!--        SELECT new_sn-->
+<!--        FROM req-->
+<!--        GROUP BY new_sn-->
+<!--        HAVING COUNT(*) > 1-->
+<!--        )-->
+<!--    </select>-->
 
     <!-- 자산 정보 수정 (ORA) -->
 <!--    <update id="updateAssets" parameterType="java.util.List">-->

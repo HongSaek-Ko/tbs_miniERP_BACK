@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -155,6 +156,12 @@ public class AssetService {
     // 신규 자산 등록
     @Transactional
     public int createAsset(List<AssetCreateDTO> req) {
+        // 시리얼번호만 list로 변환
+        // List<String> snList = req.stream().map(AssetCreateDTO::getAssetSn).collect(Collectors.toList());
+
+        // 중복 있으면 처리 안함
+        if(assetMapper.countSnConflicts(req) > 0 || assetMapper.countSnDupInReq(req) > 0) return 0;
+
         if (req == null || req.isEmpty()) return 0;
 
         int inserted = assetMapper.createAssets(req);
@@ -257,6 +264,8 @@ public class AssetService {
     // 자산 정보 수정
     @Transactional
     public void updateAssets(List<AssetUpdateDTO> dto) {
+        // 중복 있으면 처리 안함
+        if(assetMapper.countSnConflicts(dto) > 0 || assetMapper.countSnDupInReq(dto) > 0) return;
 //        for (AssetUpdateDTO dto : dtos) {
 //            Asset asset = assetRepository.findById(dto.getAssetId())
 //                    .orElseThrow(() ->

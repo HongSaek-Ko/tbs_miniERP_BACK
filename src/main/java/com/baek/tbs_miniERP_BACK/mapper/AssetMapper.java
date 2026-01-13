@@ -24,8 +24,16 @@ public interface AssetMapper {
     // 자산 시리얼 번호 조회
     List<String> findAllSn();
 
+    // 시리얼 번호 유효성 검증
+    int validSn(List<String> sn);
+
+    // 등록/수정 시 유효성 검사
+    int countSnConflicts(@Param("list") List<?> list); // DB 중복
+    int countSnDupInReq(@Param("list") List<?> list); // DTO 내부 중복
+
     // 신규 자산 정보 등록
     int createAssets(@Param("list") List<AssetCreateDTO> dtos);
+
 
     // 자산 정보 수정
     void updateAssets(List<AssetUpdateDTO> dtos);
