@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -132,19 +133,44 @@ public class AssetController {
     // 자산별 변동 이력 조회
     @GetMapping("/history/{assetId}")
     public ApiResponse<List<AssetHistoryListDTO>> findByAssetId(@PathVariable("assetId") String assetId) {
-        List<AssetHistoryListDTO> dto = assetService.findByAssetId(assetId);
+        log.info("assetId? {}", assetId);
+        List<AssetHistoryListDTO> dto;
+        if(!assetId.equals("TOTAL")) {
+            dto = assetService.findByAssetId(assetId);
+        } else {
+            dto = assetService.findAllHistories();
+        }
         return ApiResponse.success(dto);
     }
 
-    // 엑셀 내보내기(자산)
+    // 엑셀 내보내기(개별 자산 이력)
     @GetMapping("/history/export/{assetId}")
-    public ResponseEntity<byte[]> exportAssetHistory(@PathVariable("assetId") String assetId)
+    public ResponseEntity<byte[]> exportAssetHistoryByAssetId(@PathVariable("assetId") String assetId)
             throws UnsupportedEncodingException {
         List<AssetHistoryListDTO> list = assetService.findByAssetId(assetId); // Mybatis
 
         byte[] bytes = HisExcelExporter.export(list);
 
         String filename = assetId +"_변동 이력_" + LocalDate.now() + ".xlsx";
+        String encoded = URLEncoder.encode(filename, "UTF-8");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encoded + "\"")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .body(bytes);
+    }
+
+    // 엑셀 내보내기(자산 이력)
+    @GetMapping("/history/export")
+    public ResponseEntity<byte[]> exportAssetHistory(@ModelAttribute AssetHisFilterParams params)
+            throws UnsupportedEncodingException {
+        List<AssetHistoryListDTO> list = assetService.findAllForExport(params); // Mybatis
+
+        byte[] bytes = HisExcelExporter.export(list);
+
+        String filename = "변동 이력_" + LocalDate.now() + ".xlsx";
         String encoded = URLEncoder.encode(filename, "UTF-8");
 
         return ResponseEntity.ok()

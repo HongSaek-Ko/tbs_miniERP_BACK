@@ -65,6 +65,11 @@ public class AssetService {
         return assetMapper.findAllForExport(p, t);
     }
 
+    // 자산 이력 조회; 엑셀 내보내기
+    public List<AssetHistoryListDTO> findAllForExport(AssetHisFilterParams p) {
+        SearchTokens t = SearchTokens.parse(p.getGlobalSearch());
+        return assetHistoryMapper.findAllForExport(p, t);
+    }
     // 자산 목록 (Entity) -> (DTO) 변환
     private AssetListDTO toDto(Asset a) {
         Employee e = a.getEmployee();
@@ -127,10 +132,15 @@ public class AssetService {
 
     }
 
-    // 이력 조회
+    // 개별 이력 조회
     @Transactional
     public List<AssetHistoryListDTO> getAssetHistory(String assetId) {
         return assetHistoryMapper.findByAssetId(assetId);
+    }
+
+    // 이력 테이블 전체 조회
+    public List<AssetHistoryListDTO> findAllHistories() {
+        return assetHistoryMapper.findAllHistories();
     }
 
     // assetId 최대값 찾기 (신규 자산 등록용)
