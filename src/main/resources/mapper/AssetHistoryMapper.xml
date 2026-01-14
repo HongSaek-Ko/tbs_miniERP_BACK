@@ -167,29 +167,107 @@
         ORDER BY a.asset_history_date DESC, a.asset_id DESC
     </select>
 
-    <!-- 자산 전체 조회 (엑셀 내보내기) -->
+    <!-- 자산 전체 조회 (엑셀 내보내기(ORA)) -->
+<!--    <select id="findAllForExport" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
+<!--        WITH did AS (-->
+<!--            SELECT-->
+<!--                asset_id,-->
+<!--                asset_history_seq,-->
+<!--                asset_history_date,-->
+<!--                asset_id || '_H' || LPAD(-->
+<!--                    TO_CHAR(-->
+<!--                        ROW_NUMBER() OVER (-->
+<!--                            PARTITION BY asset_id-->
+<!--                            ORDER BY asset_history_date, asset_history_seq-->
+<!--                    )-->
+<!--                ), 3, '0'-->
+<!--            ) AS display_id-->
+<!--            FROM asset_history-->
+<!--        )-->
+<!--        SELECT-->
+<!--            a.asset_history_seq     AS assetHistorySeq,-->
+<!--            a.asset_id              AS assetId,-->
+<!--            d.display_id            AS displayId,-->
+<!--            a.asset_hold_emp        AS assetHoldEmp,-->
+<!--            a.asset_history_desc    AS assetHistoryDesc,-->
+<!--        CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate-->
+<!--        FROM asset_history a-->
+<!--        JOIN did d ON a.asset_id = d.asset_id-->
+<!--        AND a.asset_history_seq = d.asset_history_seq-->
+<!--        <where>-->
+<!--            <if test="p.assetId != null and p.assetId.trim() != ''">-->
+<!--                AND LOWER(a.asset_id) LIKE '%' || LOWER(#{p.assetId}) || '%'-->
+<!--            </if>-->
+<!--            <if test="p.displayId != null and p.displayId.trim() != ''">-->
+<!--                AND LOWER(d.display_id) LIKE '%' || LOWER(#{p.displayId}) || '%'-->
+<!--            </if>-->
+<!--            <if test="p.assetHoldEmp != null and p.assetHoldEmp.trim() != ''">-->
+<!--                AND LOWER(a.asset_hold_emp) LIKE '%' || LOWER(#{p.assetHoldEmp}) || '%'-->
+<!--            </if>-->
+<!--            <if test="p.assetHistoryDesc != null and p.assetHistoryDesc.trim() != ''">-->
+<!--                AND LOWER(a.asset_history_desc) LIKE '%' || LOWER(#{p.assetHistoryDesc}) || '%'-->
+<!--            </if>-->
+<!--            <if test="p.assetHistoryDate != null and p.assetHistoryDate.trim() != ''">-->
+<!--                AND LOWER(a.asset_history_date) LIKE '%' || LOWER(#{p.assetHistoryDate}) || '%'-->
+<!--            </if>-->
+<!--            &lt;!&ndash; globalSearch: -토큰(제외) &ndash;&gt;-->
+<!--            <foreach collection="t.mustExclude" item="token">-->
+<!--                AND NOT (-->
+<!--                LOWER(a.asset_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(d.display_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_hold_emp) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_desc) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_date) LIKE '%' || #{token} || '%'-->
+<!--                )-->
+<!--            </foreach>-->
+
+<!--            &lt;!&ndash; globalSearch: +토큰(필수) &ndash;&gt;-->
+<!--            <foreach collection="t.mustInclude" item="token">-->
+<!--                AND (-->
+<!--                LOWER(a.asset_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(d.display_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_hold_emp) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_desc) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_date) LIKE '%' || #{token} || '%'-->
+<!--                )-->
+<!--            </foreach>-->
+
+<!--            &lt;!&ndash; globalSearch: 일반토큰(AND 규칙 그대로) &ndash;&gt;-->
+<!--            <foreach collection="t.include" item="token">-->
+<!--                AND (-->
+<!--                LOWER(a.asset_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(d.display_id) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_hold_emp) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_desc) LIKE '%' || #{token} || '%'-->
+<!--                OR LOWER(a.asset_history_date) LIKE '%' || #{token} || '%'-->
+<!--                )-->
+<!--            </foreach>-->
+<!--        </where>-->
+<!--        ORDER BY a.asset_history_date DESC, a.asset_id DESC-->
+<!--    </select>-->
+
+    <!-- 자산 전체 조회 (엑셀 내보내기(PG)) -->
     <select id="findAllForExport" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">
         WITH did AS (
-            SELECT
-                asset_id,
-                asset_history_seq,
-                asset_history_date,
-                asset_id || '_H' || LPAD(
-                    TO_CHAR(
-                        ROW_NUMBER() OVER (
-                            PARTITION BY asset_id
-                            ORDER BY asset_history_date, asset_history_seq
-                    )
-                ), 3, '0'
-            ) AS display_id
-            FROM asset_history
+        SELECT
+        asset_id,
+        asset_history_seq,
+        asset_history_date,
+        asset_id || '_H' || LPAD(
+            (ROW_NUMBER() OVER (
+                PARTITION BY asset_id
+                ORDER BY asset_history_date, asset_history_seq
+            )
+            )::text, 3, '0'
+        ) AS display_id
+        FROM asset_history
         )
         SELECT
-            a.asset_history_seq     AS assetHistorySeq,
-            a.asset_id              AS assetId,
-            d.display_id            AS displayId,
-            a.asset_hold_emp        AS assetHoldEmp,
-            a.asset_history_desc    AS assetHistoryDesc,
+        a.asset_history_seq     AS assetHistorySeq,
+        a.asset_id              AS assetId,
+        d.display_id            AS displayId,
+        a.asset_hold_emp        AS assetHoldEmp,
+        a.asset_history_desc    AS assetHistoryDesc,
         CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate
         FROM asset_history a
         JOIN did d ON a.asset_id = d.asset_id
@@ -243,7 +321,7 @@
                 )
             </foreach>
         </where>
-        ORDER BY a.asset_history_date DESC, 1 DESC;
+        ORDER BY a.asset_history_date DESC, a.asset_id DESC
     </select>
 
 </mapper>

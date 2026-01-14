@@ -162,10 +162,11 @@ public class AssetController {
                 .body(bytes);
     }
 
-    // 엑셀 내보내기(자산 이력)
+    // 엑셀 내보내기(전체 자산 이력)
     @GetMapping("/history/export")
     public ResponseEntity<byte[]> exportAssetHistory(@ModelAttribute AssetHisFilterParams params)
             throws UnsupportedEncodingException {
+        log.info("params? {}", params.toString());
         List<AssetHistoryListDTO> list = assetService.findAllForExport(params); // Mybatis
 
         byte[] bytes = HisExcelExporter.export(list);
