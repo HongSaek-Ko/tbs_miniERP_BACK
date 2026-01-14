@@ -5,6 +5,7 @@ import com.baek.tbs_miniERP_BACK.mapper.AssetMapper;
 import com.baek.tbs_miniERP_BACK.service.AssetService;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
 import com.baek.tbs_miniERP_BACK.util.HisExcelExporter;
+import com.baek.tbs_miniERP_BACK.util.TotalHisExporter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -169,7 +170,8 @@ public class AssetController {
         log.info("params? {}", params.toString());
         List<AssetHistoryListDTO> list = assetService.findAllForExport(params); // Mybatis
 
-        byte[] bytes = HisExcelExporter.export(list);
+//        byte[] bytes = HisExcelExporter.export(list);
+        byte[] bytes = TotalHisExporter.export(list);
 
         String filename = "변동 이력_" + LocalDate.now() + ".xlsx";
         String encoded = URLEncoder.encode(filename, "UTF-8");
