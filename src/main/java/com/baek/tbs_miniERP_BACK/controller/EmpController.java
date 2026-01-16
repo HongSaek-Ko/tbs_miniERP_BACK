@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -65,6 +66,7 @@ public class EmpController {
     }
 
     // 직원 정보 등록
+    @PreAuthorize("hasAuthority('PERM_HR_WRITE')")
     @PostMapping
     public ApiResponse<?> createEmps(@RequestBody List<EmpCreateDTO> reqs) {
          int res = empService.createEmps(reqs);
@@ -75,6 +77,7 @@ public class EmpController {
         }
     }
     // 직원 정보 수정
+    @PreAuthorize("hasAuthority('PERM_HR_WRITE')")
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> empUpdate(@RequestBody List<EmpUpdateDTO> dtos) {
         log.info(dtos.toString());
@@ -83,6 +86,7 @@ public class EmpController {
     }
 
     // 직원 정보 수정 - 퇴직처리
+    @PreAuthorize("hasAuthority('PERM_HR_WRITE')")
     @PatchMapping("/resign")
     public ApiResponse<?> empResign(@RequestBody List<EmpResignDTO> dtos) {
         if(dtos == null || dtos.isEmpty()) {

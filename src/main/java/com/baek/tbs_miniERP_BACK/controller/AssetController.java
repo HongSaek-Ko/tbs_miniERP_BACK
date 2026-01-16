@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -73,6 +74,7 @@ public class AssetController {
     }
 
     // 자산 폐기
+    @PreAuthorize("hasAuthority('PERM_ASSET_WRITE')")
     @PatchMapping("/dispose")
     public ApiResponse<?> disposeAssets(@RequestBody List<AssetDisposeDTO> reqs) {
 
@@ -113,6 +115,7 @@ public class AssetController {
     }
 
     // 신규 자산 등록 (다중)
+    @PreAuthorize("hasAuthority('PERM_ASSET_WRITE')")
     @PostMapping
     public ApiResponse<?> create(@Valid @RequestBody List<AssetCreateDTO> req) {
         int res = assetService.createAsset(req);
@@ -124,6 +127,7 @@ public class AssetController {
     }
 
     // 자산 정보 수정 (다중)
+    @PreAuthorize("hasAuthority('PERM_ASSET_WRITE')")
     @PatchMapping("/bulkUpdate")
     public ApiResponse<?> assetUpdate(@RequestBody List<AssetUpdateDTO> dto) {
         log.info(dto.toString());
