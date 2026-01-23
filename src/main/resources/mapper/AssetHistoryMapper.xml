@@ -43,47 +43,65 @@
         </foreach>
     </insert>
 
-    <!--    이력조회(PG) -->
-<!--    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
-<!--        SELECT-->
-<!--            a.asset_history_seq AS assetHistorySeq,-->
-<!--            a.asset_id          AS assetId,-->
-<!--            a.asset_id || '_H' || LPAD(-->
-<!--                (ROW_NUMBER() OVER (-->
-<!--                    PARTITION BY a.asset_id-->
-<!--                    ORDER BY a.asset_history_date, a.asset_history_seq-->
-<!--                ))::text, 3, '0'-->
-<!--            ) AS displayId,-->
+    <!-- 단일 이력조회(PG) -->
+    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">
+        SELECT
+            a.asset_history_seq AS assetHistorySeq,
+            a.asset_id          AS assetId,
+            a.asset_id || '_H' || LPAD(
+                (ROW_NUMBER() OVER (
+                    PARTITION BY a.asset_id
+                    ORDER BY a.asset_history_date, a.asset_history_seq
+                ))::text, 3, '0'
+            ) AS displayId,
 
-<!--            a.asset_hold_emp AS assetHoldEmp,-->
-<!--            a.asset_hold_emp_his AS assetHoldEmpHis,-->
-<!--            a.asset_history_desc AS assetHistoryDesc,-->
-<!--            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,-->
+            a.asset_hold_emp AS assetHoldEmp,
+            a.asset_hold_emp_his AS assetHoldEmpHis,
+            a.asset_history_desc AS assetHistoryDesc,
+            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,
 
-<!--            &lt;!&ndash; '신규' = (자산별)이력일자 최상위(RN 1) &ndash;&gt;-->
-<!--            CASE-->
-<!--                WHEN ROW_NUMBER() OVER (-->
-<!--                    PARTITION BY a.asset_id-->
-<!--                    ORDER BY a.asset_history_date, a.asset_history_seq) = 1-->
-<!--            THEN 1 ELSE 0-->
-<!--            END AS isFirst,-->
+            <!-- '신규' = (자산별)이력일자 최상위(RN 1) -->
+            CASE
+                WHEN ROW_NUMBER() OVER (
+                    PARTITION BY a.asset_id
+                    ORDER BY a.asset_history_date, a.asset_history_seq) = 1
+            THEN 1 ELSE 0
+            END AS isFirst,
 
-<!--            &lt;!&ndash; '이관' = ('이전 소유자' != '현재 소유자') &ndash;&gt;-->
-<!--            CASE-->
-<!--                WHEN a.asset_hold_emp_his IS NOT NULL-->
-<!--                AND a.asset_hold_emp_his != a.asset_hold_emp-->
-<!--            THEN 1 ELSE 0-->
-<!--            END AS isTransfer,-->
+            <!-- '이관' = ('이전 소유자' != '현재 소유자') -->
+            CASE
+                WHEN a.asset_hold_emp_his IS NOT NULL
+                AND a.asset_hold_emp_his != a.asset_hold_emp
+            THEN 1 ELSE 0
+            END AS isTransfer,
 
-<!--            &lt;!&ndash; '폐기' = 비고(사유)에 '폐기'가 포함된 경우 &ndash;&gt;-->
-<!--            CASE-->
-<!--                WHEN STRPOS(COALESCE(a.asset_history_desc, ''), '폐기') > 0-->
-<!--            THEN 1 ELSE 0-->
-<!--            END AS isDispose-->
-<!--        FROM asset_history a-->
-<!--        WHERE a.asset_id = #{assetId}-->
-<!--        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC-->
-<!--    </select>-->
+            <!-- '폐기' = 비고(사유)에 '폐기'가 포함된 경우 -->
+            CASE
+                WHEN STRPOS(COALESCE(a.asset_history_desc, ''), '폐기') > 0
+            THEN 1 ELSE 0
+            END AS isDispose
+        FROM asset_history a
+        WHERE a.asset_id = #{assetId}
+        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC
+    </select>
+
+    <!-- 전체 이력 조회 (PG) -->
+    <select id="findAllHistories">
+        SELECT
+        a.asset_history_seq AS assetHistorySeq,
+        a.asset_id          AS assetId,
+        a.asset_id || '_H' || LPAD(
+        (ROW_NUMBER() OVER (
+        PARTITION BY a.asset_id
+        ORDER BY a.asset_history_date, a.asset_history_seq)
+        )::text, 3, '0'
+        ) AS displayId,
+        a.asset_hold_emp      AS assetHoldEmp,
+        a.asset_history_desc  AS assetHistoryDesc,
+        CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate
+        FROM asset_history a
+        ORDER BY a.asset_history_date DESC, a.asset_id DESC
+    </select>
 
     <!-- 이력조회(ORA) -->
 <!--    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
@@ -148,23 +166,7 @@
 <!--        ORDER BY a.asset_history_date DESC, 1 DESC-->
 <!--    </select>-->
 
-    <!-- 전체 이력 조회 (PG) -->
-    <select id="findAllHistories">
-        SELECT
-        a.asset_history_seq AS assetHistorySeq,
-        a.asset_id          AS assetId,
-        a.asset_id || '_H' || LPAD(
-            (ROW_NUMBER() OVER (
-                PARTITION BY a.asset_id
-                ORDER BY a.asset_history_date, a.asset_history_seq)
-            )::text, 3, '0'
-        ) AS displayId,
-        a.asset_hold_emp      AS assetHoldEmp,
-        a.asset_history_desc  AS assetHistoryDesc,
-        CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate
-        FROM asset_history a
-        ORDER BY a.asset_history_date DESC, a.asset_id DESC
-    </select>
+
 
     <!-- 자산 전체 조회 (엑셀 내보내기(ORA)) -->
 <!--    <select id="findAllForExport" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
