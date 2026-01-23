@@ -44,88 +44,87 @@
     </insert>
 
     <!--    이력조회(PG) -->
-    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">
-        SELECT
-            a.asset_history_seq AS assetHistorySeq,
-            a.asset_id          AS assetId,
-            a.asset_id || '_H' || LPAD(
-                (ROW_NUMBER() OVER (
-                    PARTITION BY a.asset_id
-                    ORDER BY a.asset_history_date, a.asset_history_seq
-                ))::text, 3, '0'
-            ) AS displayId,
+<!--    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
+<!--        SELECT-->
+<!--            a.asset_history_seq AS assetHistorySeq,-->
+<!--            a.asset_id          AS assetId,-->
+<!--            a.asset_id || '_H' || LPAD(-->
+<!--                (ROW_NUMBER() OVER (-->
+<!--                    PARTITION BY a.asset_id-->
+<!--                    ORDER BY a.asset_history_date, a.asset_history_seq-->
+<!--                ))::text, 3, '0'-->
+<!--            ) AS displayId,-->
 
-            a.asset_hold_emp AS assetHoldEmp,
-            a.asset_hold_emp_his AS assetHoldEmpHis,
-            a.asset_history_desc AS assetHistoryDesc,
-            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,
+<!--            a.asset_hold_emp AS assetHoldEmp,-->
+<!--            a.asset_hold_emp_his AS assetHoldEmpHis,-->
+<!--            a.asset_history_desc AS assetHistoryDesc,-->
+<!--            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,-->
 
-            <!-- '신규' = (자산별)이력일자 최상위(RN 1) -->
-            CASE
-                WHEN ROW_NUMBER() OVER (
-                    PARTITION BY a.asset_id
-                    ORDER BY a.asset_history_date, a.asset_history_seq) = 1
-            THEN 1 ELSE 0
-            END AS isFirst,
+<!--            &lt;!&ndash; '신규' = (자산별)이력일자 최상위(RN 1) &ndash;&gt;-->
+<!--            CASE-->
+<!--                WHEN ROW_NUMBER() OVER (-->
+<!--                    PARTITION BY a.asset_id-->
+<!--                    ORDER BY a.asset_history_date, a.asset_history_seq) = 1-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isFirst,-->
 
-            <!-- '이관' = ('이전 소유자' != '현재 소유자') -->
-            CASE
-                WHEN a.asset_hold_emp_his IS NOT NULL
-                AND a.asset_hold_emp_his != a.asset_hold_emp
-            THEN 1 ELSE 0
-            END AS isTransfer,
+<!--            &lt;!&ndash; '이관' = ('이전 소유자' != '현재 소유자') &ndash;&gt;-->
+<!--            CASE-->
+<!--                WHEN a.asset_hold_emp_his IS NOT NULL-->
+<!--                AND a.asset_hold_emp_his != a.asset_hold_emp-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isTransfer,-->
 
-            <!-- '폐기' = 비고(사유)에 '폐기'가 포함된 경우 -->
-            CASE
-                WHEN STRPOS(COALESCE(a.asset_history_desc, ''), '폐기') > 0
-            THEN 1 ELSE 0
-            END AS isDispose
-        FROM asset_history a
-        WHERE a.asset_id = #{assetId}
-        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC
-    </select>
-
+<!--            &lt;!&ndash; '폐기' = 비고(사유)에 '폐기'가 포함된 경우 &ndash;&gt;-->
+<!--            CASE-->
+<!--                WHEN STRPOS(COALESCE(a.asset_history_desc, ''), '폐기') > 0-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isDispose-->
+<!--        FROM asset_history a-->
+<!--        WHERE a.asset_id = #{assetId}-->
+<!--        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC-->
+<!--    </select>-->
 
     <!-- 이력조회(ORA) -->
 <!--    <select id="findByAssetId" resultType="com.baek.tbs_miniERP_BACK.dto.AssetHistoryListDTO">-->
 <!--        SELECT-->
-    <!--        a.asset_history_seq AS assetHistorySeq,-->
-    <!--        a.asset_id          AS assetId,-->
-    <!--        a.asset_id || '_H' || LPAD(-->
-    <!--            TO_CHAR(-->
-    <!--                ROW_NUMBER() OVER (-->
-    <!--                    PARTITION BY a.asset_id-->
-    <!--                    ORDER BY a.asset_history_date, a.asset_history_seq-->
-    <!--                )-->
-    <!--            ),-->
-    <!--            3, '0'-->
-    <!--        ) AS displayId,-->
-    <!--        a.asset_hold_emp      AS assetHoldEmp,-->
-    <!--        a.asset_hold_emp_his  AS assetHoldEmpHis,-->
-    <!--        a.asset_history_desc  AS assetHistoryDesc,-->
-    <!--        CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,-->
+<!--            a.asset_history_seq AS assetHistorySeq,-->
+<!--            a.asset_id          AS assetId,-->
+<!--            a.asset_id || '_H' || LPAD(-->
+<!--                TO_CHAR(-->
+<!--                    ROW_NUMBER() OVER (-->
+<!--                        PARTITION BY a.asset_id-->
+<!--                        ORDER BY a.asset_history_date, a.asset_history_seq-->
+<!--                    )-->
+<!--                ),-->
+<!--                3, '0'-->
+<!--            ) AS displayId,-->
+<!--            a.asset_hold_emp      AS assetHoldEmp,-->
+<!--            a.asset_hold_emp_his  AS assetHoldEmpHis,-->
+<!--            a.asset_history_desc  AS assetHistoryDesc,-->
+<!--            CAST(a.asset_history_date AS TIMESTAMP) AS assetHistoryDate,-->
 
-    <!--        CASE-->
-    <!--        WHEN ROW_NUMBER() OVER (-->
-    <!--        PARTITION BY a.asset_id-->
-    <!--        ORDER BY a.asset_history_date, a.asset_history_seq-->
-    <!--        ) = 1-->
-    <!--        THEN 1 ELSE 0-->
-    <!--        END AS isFirst,-->
+<!--            CASE-->
+<!--            WHEN ROW_NUMBER() OVER (-->
+<!--            PARTITION BY a.asset_id-->
+<!--            ORDER BY a.asset_history_date, a.asset_history_seq-->
+<!--            ) = 1-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isFirst,-->
 
-    <!--        CASE-->
-    <!--        WHEN a.asset_hold_emp_his IS NOT NULL-->
-    <!--        AND a.asset_hold_emp_his != a.asset_hold_emp-->
-    <!--        THEN 1 ELSE 0-->
-    <!--        END AS isTransfer,-->
+<!--            CASE-->
+<!--            WHEN a.asset_hold_emp_his IS NOT NULL-->
+<!--            AND a.asset_hold_emp_his != a.asset_hold_emp-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isTransfer,-->
 
-    <!--        CASE-->
-    <!--        WHEN INSTR(NVL(a.asset_history_desc, ''), '폐기') > 0-->
-    <!--        THEN 1 ELSE 0-->
-    <!--        END AS isDispose-->
-    <!--        FROM asset_history a-->
-    <!--        WHERE a.asset_id = #{assetId}-->
-    <!--        ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC-->
+<!--            CASE-->
+<!--            WHEN INSTR(NVL(a.asset_history_desc, ''), '폐기') > 0-->
+<!--            THEN 1 ELSE 0-->
+<!--            END AS isDispose-->
+<!--            FROM asset_history a-->
+<!--            WHERE a.asset_id = #{assetId}-->
+<!--            ORDER BY a.asset_history_date DESC, a.asset_history_seq DESC-->
 <!--        </select>-->
 
     <!-- 전체 이력 조회(ORA). 정렬 기준 이력 생성 시간 DESC > 이력 PK DESC -->
@@ -195,19 +194,19 @@
 <!--        JOIN did d ON a.asset_id = d.asset_id-->
 <!--        AND a.asset_history_seq = d.asset_history_seq-->
 <!--        <where>-->
-<!--            <if test="p.assetId != null and p.assetId.trim() != ''">-->
+<!--            <if test=p.assetId != null and p.assetId.trim() != ''">-->
 <!--                AND LOWER(a.asset_id) LIKE '%' || LOWER(#{p.assetId}) || '%'-->
 <!--            </if>-->
 <!--            <if test="p.displayId != null and p.displayId.trim() != ''">-->
 <!--                AND LOWER(d.display_id) LIKE '%' || LOWER(#{p.displayId}) || '%'-->
 <!--            </if>-->
-<!--            <if test="p.assetHoldEmp != null and p.assetHoldEmp.trim() != ''">-->
+<!--            <if test=p.assetHoldEmp != null and p.assetHoldEmp.trim() != ''">-->
 <!--                AND LOWER(a.asset_hold_emp) LIKE '%' || LOWER(#{p.assetHoldEmp}) || '%'-->
 <!--            </if>-->
-<!--            <if test="p.assetHistoryDesc != null and p.assetHistoryDesc.trim() != ''">-->
+<!--            <if test=".assetHistoryDesc != null and p.assetHistoryDesc.trim() != ''">-->
 <!--                AND LOWER(a.asset_history_desc) LIKE '%' || LOWER(#{p.assetHistoryDesc}) || '%'-->
 <!--            </if>-->
-<!--            <if test="p.assetHistoryDate != null and p.assetHistoryDate.trim() != ''">-->
+<!--            <if test=".assetHistoryDate != null and p.assetHistoryDate.trim() != ''">-->
 <!--                AND LOWER(a.asset_history_date) LIKE '%' || LOWER(#{p.assetHistoryDate}) || '%'-->
 <!--            </if>-->
 <!--            &lt;!&ndash; globalSearch: -토큰(제외) &ndash;&gt;-->

@@ -11,6 +11,8 @@ import com.baek.tbs_miniERP_BACK.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserMapper userMapper;
+    private final UserAuthMapper userAuthMapper;
     private final PasswordEncoder passwordEncoder;
 
     // 내 정보
@@ -36,7 +39,7 @@ public class UserService {
         // 권한 코드 -> 권한명
         List<String> perms = new ArrayList<>(AuthMapper.toPerms(new HashSet<>(authCodes)));
 
-        return new UserRes(user.getUserId(), user.getUsername(), perms);
+        return new UserRes(user.getUserId(), user.getUsername(), user.getUserStatus(), perms);
     }
 
     // 유저 정보 수정
@@ -50,9 +53,20 @@ public class UserService {
 
         // 업데이트 이후 정보 재조회
         User user = userMapper.findUserByUserId(userId);
+        user.setUserStatus("ACTIVE"); // 업데이트 시 NEW(이든 뭐든) -> ACTIVE로 변경
         List<String> authCodes = userMapper.findAuthByUserId(userId);
         List<String> perms = new ArrayList<>(AuthMapper.toPerms(new HashSet<>(authCodes)));
 
-        return new UserRes(user.getUserId(), user.getUsername(), perms);
+        return new UserRes(user.getUserId(), user.getUsername(), user.getUserStatus(), perms);
+    }
+
+    // 유저 권한 부여
+    public int grantAuth(String userId, String authCode) {
+        return userAuthMapper.grantAuth(userId, authCode);
+    }
+
+    // 유저 권한 회수
+    public int withdrawAuth(String userId, String authCode) {
+        return userAuthMapper.withdrawAuth(userId, authCode);
     }
 }

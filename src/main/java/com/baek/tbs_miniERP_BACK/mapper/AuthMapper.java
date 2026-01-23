@@ -13,6 +13,7 @@ public final class AuthMapper {
         if (authCodes.contains("AUTH_ADMIN")) {
             perms.add(Perms.ASSET_WRITE);
             perms.add(Perms.HR_WRITE);
+            perms.add(Perms.ADMIN);
         }
         return perms;
     }

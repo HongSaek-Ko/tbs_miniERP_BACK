@@ -9,7 +9,7 @@
         WHERE user_id = #{userId}
     </select>
     <select id="findUserByUserId" resultType="com.baek.tbs_miniERP_BACK.entity.User">
-        SELECT user_id AS userId, user_name AS username, user_pw AS userPw
+        SELECT user_id AS userId, user_name AS username, user_pw AS userPw, user_status AS userStatus
         FROM users
         WHERE user_id = #{userId}
     </select>
@@ -18,10 +18,55 @@
         FROM user_auth
         WHERE user_id = #{userId}
     </select>
+
     <insert id="createUser" parameterType="com.baek.tbs_miniERP_BACK.entity.User">
         INSERT INTO users (user_id, user_name, user_pw, user_status)
-        VALUES (#{userId},#{username},#{userPw}, 'ACTIVE')
+        VALUES (#{userId},#{username},#{userPw},#{userStatus})
     </insert>
+
+    <!-- Emp 정보 -> User 일괄등록 (ORA) -->
+    <!-- id, name은 emp에 입력한 정보로, userPw, userStatus는 기본값으로 -->
+<!--    <insert id="createUsers">-->
+<!--        INSERT ALL-->
+<!--        <foreach collection="list" item="e">-->
+<!--            INTO-->
+<!--                users-->
+<!--                (-->
+<!--                    user_id,-->
+<!--                    user_name,-->
+<!--                    user_pw,-->
+<!--                    user_status-->
+<!--                )-->
+<!--            VALUES-->
+<!--                (-->
+<!--                    #{e.userId},-->
+<!--                    #{e.username},-->
+<!--                    #{e.userPw},-->
+<!--                    #{e.userStatus}-->
+<!--                )-->
+<!--        </foreach>-->
+<!--        SELECT 1 FROM DUAL-->
+<!--    </insert>-->
+
+    <insert id="createUsers" parameterType="java.util.List">
+        INSERT INTO users (
+        user_id,
+        user_name,
+        user_pw,
+        user_status
+        )
+        VALUES
+        <foreach collection="list" item="e" separator=",">
+            (
+            #{e.userId},
+            #{e.username},
+            #{e.userPw},
+            #{e.userStatus}
+            )
+        </foreach>
+    </insert>
+
+
     <update id="updateUsername">
         UPDATE users
         SET user_name = #{username}
@@ -29,7 +74,36 @@
     </update>
     <update id="updatePassword">
         UPDATE users
-        SET user_pw = #{userPw}
+        SET user_pw = #{userPw}, user_status = 'ACTIVE'
         WHERE user_id = #{userId}
     </update>
+
+    <!-- 모든 유저+권한 조회(ORA) -->
+<!--    <select id="findAllUsersWithAuth" resultType="com.baek.tbs_miniERP_BACK.dto.UserWithAuthDTO">-->
+<!--        SELECT DISTINCT-->
+<!--            u.user_id AS userId,-->
+<!--            u.user_name AS userName,-->
+<!--            LISTAGG(a.auth_name, ', ')-->
+<!--                WITHIN GROUP (ORDER BY u.user_id)-->
+<!--                OVER (PARTITION BY u.user_id)-->
+<!--                AS auths-->
+<!--        FROM users u-->
+<!--        JOIN user_auth ua ON u.user_id = ua.user_id-->
+<!--        JOIN auth a ON ua.auth_code = a.auth_code;-->
+<!--    </select>-->
+
+    <!-- 모든 유저+권한 조회(PG) -->
+    <select id="findAllUsersWithAuth" resultType="com.baek.tbs_miniERP_BACK.dto.UserWithAuthDTO">
+        SELECT
+        u.user_id   AS "userId",
+        u.user_name AS "userName",
+        string_agg(a.auth_name, ', ' ORDER BY a.auth_name) AS "auths"
+        FROM users u
+        JOIN user_auth ua ON u.user_id = ua.user_id
+        JOIN auth a ON ua.auth_code = a.auth_code
+        GROUP BY u.user_id, u.user_name
+        ORDER BY u.user_id
+    </select>
+
+
 </mapper>

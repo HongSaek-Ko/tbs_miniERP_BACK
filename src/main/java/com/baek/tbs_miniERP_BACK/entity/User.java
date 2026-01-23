@@ -26,7 +26,7 @@ public class User {
     private String userPw;
 
     @Column(name = "USER_STATUS", nullable = false, length = 20)
-    private String userStatus;
+    private String userStatus; // NEW / ACTIVE / DISABLED
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

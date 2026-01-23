@@ -1,10 +1,7 @@
 package com.baek.tbs_miniERP_BACK.service;
 
 import com.baek.tbs_miniERP_BACK.config.JwtProvider;
-import com.baek.tbs_miniERP_BACK.dto.LoginDTO;
-import com.baek.tbs_miniERP_BACK.dto.LoginRes;
-import com.baek.tbs_miniERP_BACK.dto.SignupDTO;
-import com.baek.tbs_miniERP_BACK.dto.UserRes;
+import com.baek.tbs_miniERP_BACK.dto.*;
 import com.baek.tbs_miniERP_BACK.entity.User;
 import com.baek.tbs_miniERP_BACK.mapper.AuthMapper;
 import com.baek.tbs_miniERP_BACK.mapper.UserMapper;
@@ -23,17 +20,24 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
-    // 회원가입
+    // 회원가입 (createEmp -> User 일괄 등록)
     // id(중복체크 O), name, pw(암호화) 입력받아 저장
-    public int singup(SignupDTO dto) {
-        if(userMapper.isExistUser(dto.userId()) > 0) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+    public int singup(List<EmpCreateDTO> dtos) {
+//        if(userMapper.isExistUser(dto.userId()) > 0) {
+//            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+//        }
+//        User user = new User();
+        List<User> users = new ArrayList<>();
+        for(EmpCreateDTO dto : dtos) {
+            User u = new User();
+            u.setUserId(dto.getEmpId());
+            u.setUsername(dto.getEmpName());
+            u.setUserPw(passwordEncoder.encode("password1!"));
+            u.setUserStatus("NEW");
+            users.add(u);
         }
-        User user = new User();
-        user.setUserId(dto.userId());
-        user.setUsername(dto.username());
-        user.setUserPw(passwordEncoder.encode(dto.userPw()));
-        return userMapper.createUser(user);
+        return userMapper.createUsers(users);
+//        return userMapper.createUsers(dtos);
     }
 
     // 로그인
@@ -48,6 +52,6 @@ public class AuthService {
         List<String> perms = new ArrayList<>(AuthMapper.toPerms(new HashSet<>(authCodes)));
         String token = jwtProvider.createAccessToken(user.getUserId(), user.getUsername(), perms);
 
-        return new LoginRes(token, new UserRes(user.getUserId(), user.getUsername(), perms));
+        return new LoginRes(token, new UserRes(user.getUserId(), user.getUsername(), user.getUserStatus(), perms));
     }
 }

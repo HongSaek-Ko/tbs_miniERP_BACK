@@ -28,7 +28,7 @@ public class EmpService {
     private final TeamMapper teamMapper;
 
     public List<EmpDTO> findAll() {
-        return empMapper.findAll();
+        return empMapper.findAllWithAuth();
     }
 
     // JPA 버전
@@ -78,6 +78,7 @@ public class EmpService {
 
     // 직원 정보 일괄 등록
     public int createEmps(List<EmpCreateDTO> dtos) {
+
         int res = empMapper.createEmps(dtos);
         return res;
     }

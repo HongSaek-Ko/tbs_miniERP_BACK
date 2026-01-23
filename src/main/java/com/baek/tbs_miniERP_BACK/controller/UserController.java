@@ -2,6 +2,7 @@ package com.baek.tbs_miniERP_BACK.controller;
 
 import com.baek.tbs_miniERP_BACK.dto.ApiResponse;
 import com.baek.tbs_miniERP_BACK.dto.UpdateMeDTO;
+import com.baek.tbs_miniERP_BACK.dto.UserAuthGrantDTO;
 import com.baek.tbs_miniERP_BACK.dto.UserRes;
 import com.baek.tbs_miniERP_BACK.service.AuthService;
 import com.baek.tbs_miniERP_BACK.service.UserService;
@@ -35,5 +36,21 @@ public class UserController {
         if(userId.isEmpty()) return null;
         return ApiResponse.success(userService.updateInfo(userId, dto));
     }
+
+    @PostMapping("/auth")
+    public ApiResponse<?> grantAuth(@RequestBody UserAuthGrantDTO dto) {
+//        String authInfo = auth.getName(); Validation - 접속한 사용자에게 ADMIN 있어야 허용
+
+        log.info("userId, authCode, {}, {}:", dto.getUserId(), dto.getAuthCode());
+        return ApiResponse.success(userService.grantAuth(dto.getUserId(), dto.getAuthCode()));
+    }
+
+    @DeleteMapping("/auth")
+    public ApiResponse<?> withdrawAuth(@RequestBody UserAuthGrantDTO dto) {
+//        String authInfo = auth.getName(); Validation - 접속한 사용자에게 ADMIN 있어야 허용
+        log.info("userId, authCode, {}, {}:", dto.getUserId(), dto.getAuthCode());
+        return ApiResponse.success(userService.withdrawAuth(dto.getUserId(), dto.getAuthCode()));
+    }
+
 
 }

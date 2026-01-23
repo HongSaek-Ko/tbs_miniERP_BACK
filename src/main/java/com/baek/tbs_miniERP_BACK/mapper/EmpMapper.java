@@ -12,6 +12,7 @@ public interface EmpMapper {
 
     // 전체 조회
     List<EmpDTO> findAll();
+    List<EmpDTO> findAllWithAuth();
 
     // 전체 조회 (엑셀 추출용)
     List<EmpDTO> selectEmpForExport(@Param("p") EmpFilterParams p, @Param("t") SearchTokens t);

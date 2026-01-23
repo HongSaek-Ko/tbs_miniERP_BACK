@@ -137,117 +137,86 @@
     </select>
 
     <!-- 신규 자산 등록 (다중) (Oracle) -->
-<!--    <insert id="createAssets">-->
-<!--        INSERT ALL-->
-<!--        <foreach collection="list" item="item">-->
-<!--            INTO-->
-<!--                asset-->
-<!--                (-->
-<!--                    asset_id,-->
-<!--                    asset_type,-->
-<!--                    asset_manufacturer,-->
-<!--                    asset_manufactured_at,-->
-<!--                    asset_model_name,-->
-<!--                    asset_sn,-->
-<!--                    emp_id,-->
-<!--                    asset_loc,-->
-<!--                    asset_issuance_date,-->
-<!--                    asset_desc,-->
-<!--                    asset_reg_dt,-->
-<!--                    asset_status-->
-<!--                )-->
-<!--            VALUES-->
-<!--                (-->
-<!--                    #{item.assetId},-->
-<!--                    #{item.assetType},-->
-<!--                    #{item.assetManufacturer},-->
-<!--                    #{item.assetManufacturedAt},-->
-<!--                    #{item.assetModelName},-->
-<!--                    #{item.assetSn},-->
-<!--                    #{item.empId},-->
-<!--                    #{item.assetLoc},-->
-<!--                    #{item.assetIssuanceDate},-->
-<!--                    #{item.assetDesc},-->
-<!--                    #{item.assetRegDt},-->
-<!--                    #{item.assetStatus}-->
-<!--                )-->
-<!--        </foreach>-->
-<!--        SELECT 1 FROM DUAL-->
-<!--    </insert>-->
+    <insert id="createAssets">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO
+                asset
+                (
+                    asset_id,
+                    asset_type,
+                    asset_manufacturer,
+                    asset_manufactured_at,
+                    asset_model_name,
+                    asset_sn,
+                    emp_id,
+                    asset_loc,
+                    asset_issuance_date,
+                    asset_desc,
+                    asset_reg_dt,
+                    asset_status
+                )
+            VALUES
+                (
+                    #{item.assetId},
+                    #{item.assetType},
+                    #{item.assetManufacturer},
+                    #{item.assetManufacturedAt},
+                    #{item.assetModelName},
+                    #{item.assetSn},
+                    #{item.empId},
+                    #{item.assetLoc},
+                    #{item.assetIssuanceDate},
+                    #{item.assetDesc},
+                    #{item.assetRegDt},
+                    #{item.assetStatus}
+                )
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
 
     <!-- 신규 자산 (Postgresql) -->
-    <insert id="createAssets" parameterType="java.util.List">
-        INSERT INTO asset (
-        asset_id,
-        asset_type,
-        asset_manufacturer,
-        asset_manufactured_at,
-        asset_model_name,
-        asset_sn,
-        emp_id,
-        asset_loc,
-        asset_issuance_date,
-        asset_desc,
-        asset_reg_dt,
-        asset_status
-        )
-        VALUES
-        <foreach collection="list" item="item" separator=",">
-            (
-            #{item.assetId},
-            #{item.assetType},
-            #{item.assetManufacturer},
-            to_timestamp(#{item.assetManufacturedAt}, 'YYYY-MM-DD'),
-            #{item.assetModelName},
-            #{item.assetSn},
-            #{item.empId},
-            #{item.assetLoc},
-            to_timestamp(#{item.assetIssuanceDate}, 'YYYY-MM-DD'),
-            #{item.assetDesc},
-            COALESCE(#{item.assetRegDt}, now()),
-            COALESCE(#{item.assetStatus}, 'HOLD')
-            )
-        </foreach>
-    </insert>
+<!--    <insert id="createAssets" parameterType="java.util.List">-->
+<!--        INSERT INTO asset (-->
+<!--        asset_id,-->
+<!--        asset_type,-->
+<!--        asset_manufacturer,-->
+<!--        asset_manufactured_at,-->
+<!--        asset_model_name,-->
+<!--        asset_sn,-->
+<!--        emp_id,-->
+<!--        asset_loc,-->
+<!--        asset_issuance_date,-->
+<!--        asset_desc,-->
+<!--        asset_reg_dt,-->
+<!--        asset_status-->
+<!--        )-->
+<!--        VALUES-->
+<!--        <foreach collection="list" item="item" separator=",">-->
+<!--            (-->
+<!--            #{item.assetId},-->
+<!--            #{item.assetType},-->
+<!--            #{item.assetManufacturer},-->
+<!--            to_timestamp(#{item.assetManufacturedAt}, 'YYYY-MM-DD'),-->
+<!--            #{item.assetModelName},-->
+<!--            #{item.assetSn},-->
+<!--            #{item.empId},-->
+<!--            #{item.assetLoc},-->
+<!--            to_timestamp(#{item.assetIssuanceDate}, 'YYYY-MM-DD'),-->
+<!--            #{item.assetDesc},-->
+<!--            COALESCE(#{item.assetRegDt}, now()),-->
+<!--            COALESCE(#{item.assetStatus}, 'HOLD')-->
+<!--            )-->
+<!--        </foreach>-->
+<!--    </insert>-->
 
     <!-- 등록 시 SN 유효성 검사 (PG) -->
     <!-- 요청-DB 중복체크 -->
-    <select id="countSnConflicts" resultType="int">
-        WITH req(asset_id, new_sn) AS (
-        VALUES
-        <foreach collection="list" item="r" separator=",">
-            (#{r.assetId}, #{r.assetSn})
-        </foreach>
-        )
-        SELECT COUNT(*)
-        FROM req
-        JOIN asset a
-        ON a.asset_sn = req.new_sn
-        AND a.asset_id != req.asset_id
-    </select>
-
-    <!-- DTO 자체 중복체크 -->
-    <select id="countSnDupInReq" resultType="int">
-        WITH req(asset_id, new_sn) AS (
-        VALUES
-        <foreach collection="list" item="r" separator=",">
-            (#{r.assetId}, #{r.assetSn})
-        </foreach>
-        )
-        SELECT COUNT(*)
-        FROM (
-        SELECT new_sn
-        FROM req
-        GROUP BY new_sn
-        HAVING COUNT(*) > 1
-        ) t
-    </select>
-
-    <!-- ORA -->
 <!--    <select id="countSnConflicts" resultType="int">-->
 <!--        WITH req(asset_id, new_sn) AS (-->
-<!--        <foreach collection="list" item="r" separator=" UNION ALL ">-->
-<!--            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual-->
+<!--        VALUES-->
+<!--        <foreach collection="list" item="r" separator=",">-->
+<!--            (#{r.assetId}, #{r.assetSn})-->
 <!--        </foreach>-->
 <!--        )-->
 <!--        SELECT COUNT(*)-->
@@ -257,10 +226,12 @@
 <!--        AND a.asset_id != req.asset_id-->
 <!--    </select>-->
 
+    <!-- DTO 자체 중복체크 -->
 <!--    <select id="countSnDupInReq" resultType="int">-->
 <!--        WITH req(asset_id, new_sn) AS (-->
-<!--        <foreach collection="list" item="r" separator=" UNION ALL ">-->
-<!--            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual-->
+<!--        VALUES-->
+<!--        <foreach collection="list" item="r" separator=",">-->
+<!--            (#{r.assetId}, #{r.assetSn})-->
 <!--        </foreach>-->
 <!--        )-->
 <!--        SELECT COUNT(*)-->
@@ -269,68 +240,97 @@
 <!--        FROM req-->
 <!--        GROUP BY new_sn-->
 <!--        HAVING COUNT(*) > 1-->
-<!--        )-->
+<!--        ) t-->
 <!--    </select>-->
 
+    <!-- ORA -->
+    <select id="countSnConflicts" resultType="int">
+        WITH req(asset_id, new_sn) AS (
+        <foreach collection="list" item="r" separator=" UNION ALL ">
+            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual
+        </foreach>
+        )
+        SELECT COUNT(*)
+        FROM req
+        JOIN asset a
+        ON a.asset_sn = req.new_sn
+        AND a.asset_id != req.asset_id
+    </select>
+
+    <select id="countSnDupInReq" resultType="int">
+        WITH req(asset_id, new_sn) AS (
+        <foreach collection="list" item="r" separator=" UNION ALL ">
+            SELECT #{r.assetId} AS asset_id, #{r.assetSn} AS new_sn FROM dual
+        </foreach>
+        )
+        SELECT COUNT(*)
+        FROM (
+        SELECT new_sn
+        FROM req
+        GROUP BY new_sn
+        HAVING COUNT(*) > 1
+        )
+    </select>
+
     <!-- 자산 정보 수정 (ORA) -->
-<!--    <update id="updateAssets" parameterType="java.util.List">-->
-<!--        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">-->
-<!--            UPDATE-->
-<!--                asset-->
-<!--            SET-->
-<!--                asset_manufacturer      = #{item.assetManufacturer},-->
-<!--                asset_manufactured_at   = #{item.assetManufacturedAt},-->
-<!--                asset_model_name        = #{item.assetModelName},-->
-<!--                emp_id                  = #{item.empId},-->
-<!--                asset_sn                = #{item.assetSn},-->
-<!--                asset_loc               = #{item.assetLoc},-->
-<!--                asset_issuance_date     = #{item.assetIssuanceDate},-->
-<!--                asset_desc              = #{item.assetDesc}-->
-<!--            WHERE-->
-<!--                asset_id = #{item.assetId}-->
-<!--        </foreach>-->
-<!--    </update>-->
+    <update id="updateAssets" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" open="DECLARE BEGIN" close="; END;">
+            UPDATE
+                asset
+            SET
+                asset_manufacturer      = #{item.assetManufacturer},
+                asset_manufactured_at   = #{item.assetManufacturedAt},
+                asset_model_name        = #{item.assetModelName},
+                emp_id                  = #{item.empId},
+                asset_sn                = #{item.assetSn},
+                asset_loc               = #{item.assetLoc},
+                asset_issuance_date     = #{item.assetIssuanceDate},
+                asset_desc              = #{item.assetDesc}
+            WHERE
+                asset_id = #{item.assetId}
+        </foreach>
+    </update>
 
     <!-- 수정 (PG) -->
-    <update id="updateAssets" parameterType="java.util.List">
-        UPDATE asset a
-        SET
-        asset_manufacturer    = v.asset_manufacturer,
-        asset_manufactured_at = v.asset_manufactured_at,
-        asset_model_name      = v.asset_model_name,
-        emp_id                = v.emp_id,
-        asset_sn              = v.asset_sn,
-        asset_loc             = v.asset_loc,
-        asset_issuance_date   = v.asset_issuance_date,
-        asset_desc            = v.asset_desc
-        FROM (
-        VALUES
-        <foreach collection="list" item="item" separator=",">
-            (
-            #{item.assetId},
-            #{item.assetManufacturer},
-            #{item.assetManufacturedAt},
-            #{item.assetModelName},
-            #{item.empId},
-            #{item.assetSn},
-            #{item.assetLoc},
-            #{item.assetIssuanceDate},
-            #{item.assetDesc}
-            )
-        </foreach>
-        ) AS v(
-        asset_id,
-        asset_manufacturer,
-        asset_manufactured_at,
-        asset_model_name,
-        emp_id,
-        asset_sn,
-        asset_loc,
-        asset_issuance_date,
-        asset_desc
-        )
-        WHERE a.asset_id = v.asset_id
-    </update>
+<!--    <update id="updateAssets" parameterType="java.util.List">-->
+<!--        UPDATE asset a-->
+<!--        SET-->
+<!--        asset_manufacturer    = v.asset_manufacturer,-->
+<!--        asset_manufactured_at = v.asset_manufactured_at,-->
+<!--        asset_model_name      = v.asset_model_name,-->
+<!--        emp_id                = v.emp_id,-->
+<!--        asset_sn              = v.asset_sn,-->
+<!--        asset_loc             = v.asset_loc,-->
+<!--        asset_issuance_date   = v.asset_issuance_date,-->
+<!--        asset_desc            = v.asset_desc-->
+<!--        FROM (-->
+<!--        VALUES-->
+<!--        <foreach collection="list" item="item" separator=",">-->
+<!--            (-->
+<!--            #{item.assetId},-->
+<!--            #{item.assetManufacturer},-->
+<!--            #{item.assetManufacturedAt},-->
+<!--            #{item.assetModelName},-->
+<!--            #{item.empId},-->
+<!--            #{item.assetSn},-->
+<!--            #{item.assetLoc},-->
+<!--            #{item.assetIssuanceDate},-->
+<!--            #{item.assetDesc}-->
+<!--            )-->
+<!--        </foreach>-->
+<!--        ) AS v(-->
+<!--        asset_id,-->
+<!--        asset_manufacturer,-->
+<!--        asset_manufactured_at,-->
+<!--        asset_model_name,-->
+<!--        emp_id,-->
+<!--        asset_sn,-->
+<!--        asset_loc,-->
+<!--        asset_issuance_date,-->
+<!--        asset_desc-->
+<!--        )-->
+<!--        WHERE a.asset_id = v.asset_id-->
+<!--    </update>-->
 
     <!-- 자산 정보 수정; 폐기처리 (ORA) -->
 <!--    <update id="disposeAssets" parameterType="java.util.List">-->

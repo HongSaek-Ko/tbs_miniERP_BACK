@@ -1,6 +1,7 @@
 package com.baek.tbs_miniERP_BACK.controller;
 
 import com.baek.tbs_miniERP_BACK.dto.*;
+import com.baek.tbs_miniERP_BACK.service.EmpOnboardingService;
 import com.baek.tbs_miniERP_BACK.service.EmpService;
 import com.baek.tbs_miniERP_BACK.util.EmpExcelExporter;
 import com.baek.tbs_miniERP_BACK.util.ExcelExporter;
@@ -24,6 +25,7 @@ import java.util.List;
 @Slf4j
 public class EmpController {
     private final EmpService empService;
+    private final EmpOnboardingService empOnboardingService;
 
     // 직원 전체 목록
     @GetMapping
@@ -69,7 +71,8 @@ public class EmpController {
     @PreAuthorize("hasAuthority('PERM_HR_WRITE')")
     @PostMapping
     public ApiResponse<?> createEmps(@RequestBody List<EmpCreateDTO> reqs) {
-         int res = empService.createEmps(reqs);
+//         int res = empService.createEmps(reqs);
+         int res = empOnboardingService.createEmpWithUser(reqs);
         if(res > 0) {
             return ApiResponse.success("등록 성공");
         } else {

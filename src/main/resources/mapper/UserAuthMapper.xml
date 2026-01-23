@@ -4,8 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.baek.tbs_miniERP_BACK.mapper.UserAuthMapper">
     <insert id="grantAuth">
-        INSERT INTO user_auth (user_id, auth_code)
-        VALUES (#{userId}, #{authCode})
+        INSERT INTO user_auth (user_id, auth_code, granted_at)
+<!--        VALUES (#{userId}, #{authCode}, SYSDATE)-->
+        VALUES (#{userId}, #{authCode}, CURRENT_TIMESTAMP)
     </insert>
 
     <delete id="withdrawAuth">

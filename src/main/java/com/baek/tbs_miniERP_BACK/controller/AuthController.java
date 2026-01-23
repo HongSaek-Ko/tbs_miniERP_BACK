@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/signup")
-    public ApiResponse<?> signup(@Valid @RequestBody SignupDTO dto) {
-        log.info("POST:/auth - dto: {}",dto.toString());
-        int res = authService.singup(dto);
-        if(res != 1) return ApiResponse.fail("500", "회원가입 실패.");
-        return ApiResponse.success("회원가입 성공.");
-    }
+//    @PostMapping("/signup")
+//    public ApiResponse<?> signup(@Valid @RequestBody SignupDTO dto) {
+//        log.info("POST:/auth - dto: {}",dto.toString());
+//        int res = authService.singup(dto);
+//        if(res != 1) return ApiResponse.fail("500", "회원가입 실패.");
+//        return ApiResponse.success("회원가입 성공.");
+//    }
 
     @PostMapping("/login")
     public ApiResponse<LoginRes> login(@Valid @RequestBody LoginDTO dto) {
